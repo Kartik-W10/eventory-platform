@@ -142,7 +142,7 @@ const PDFs = () => {
             <FormField
               control={form.control}
               name="file"
-              render={({ field: { onChange, ...field } }) => (
+              render={({ field: { onChange, value, ...field } }) => (
                 <FormItem>
                   <FormLabel>PDF File</FormLabel>
                   <FormControl>
