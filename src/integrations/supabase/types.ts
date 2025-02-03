@@ -104,6 +104,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pdfs: {
+        Row: {
+          author: string | null
+          description: string | null
+          file_path: string
+          id: string
+          thumbnail_path: string | null
+          title: string
+          upload_date: string | null
+          user_id: string
+          views: number | null
+        }
+        Insert: {
+          author?: string | null
+          description?: string | null
+          file_path: string
+          id?: string
+          thumbnail_path?: string | null
+          title: string
+          upload_date?: string | null
+          user_id: string
+          views?: number | null
+        }
+        Update: {
+          author?: string | null
+          description?: string | null
+          file_path?: string
+          id?: string
+          thumbnail_path?: string | null
+          title?: string
+          upload_date?: string | null
+          user_id?: string
+          views?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
