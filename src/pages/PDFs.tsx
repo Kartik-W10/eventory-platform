@@ -149,7 +149,12 @@ const PDFs = () => {
                     <Input
                       type="file"
                       accept=".pdf"
-                      onChange={(e) => onChange(e.target.files)}
+                      onChange={(e) => {
+                        const files = e.target.files;
+                        if (files) {
+                          onChange(files);
+                        }
+                      }}
                       {...field}
                     />
                   </FormControl>
