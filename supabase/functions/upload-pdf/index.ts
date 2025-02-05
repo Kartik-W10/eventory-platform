@@ -46,9 +46,6 @@ serve(async (req) => {
       throw uploadError
     }
 
-    // Create thumbnail using first page (placeholder for now)
-    const thumbnailPath = `thumbnails/${filePath.replace('.pdf', '.png')}`
-
     // Insert record into pdfs table
     const { error: dbError } = await supabase
       .from('pdfs')
@@ -56,7 +53,7 @@ serve(async (req) => {
         title: title,
         description: description || null,
         file_path: filePath,
-        thumbnail_path: thumbnailPath,
+        thumbnail_path: null,
         author: author || null,
         views: 0,
         user_id: req.headers.get('x-user-id')

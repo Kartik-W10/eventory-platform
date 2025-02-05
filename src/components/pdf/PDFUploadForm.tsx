@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UploadFormData {
   title: string;
@@ -31,16 +32,24 @@ export const PDFUploadForm = ({ onSuccess }: PDFUploadFormProps) => {
       if (data.description) formData.append("description", data.description);
       if (data.author) formData.append("author", data.author);
 
-      const response = await fetch("/api/upload-pdf", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Upload failed");
+      // Get the current user's ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("User not authenticated");
       }
 
-      return response.json();
+      const { data: response, error } = await supabase.functions.invoke("upload-pdf", {
+        body: formData,
+        headers: {
+          'x-user-id': user.id,
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      return response;
     },
     onSuccess: () => {
       toast({
@@ -50,7 +59,8 @@ export const PDFUploadForm = ({ onSuccess }: PDFUploadFormProps) => {
       form.reset();
       onSuccess();
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Upload error:", error);
       toast({
         title: "Error",
         description: "Failed to upload PDF",
