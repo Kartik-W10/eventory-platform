@@ -26,30 +26,49 @@ export const PDFUploadForm = ({ onSuccess }: PDFUploadFormProps) => {
 
   const uploadMutation = useMutation({
     mutationFn: async (data: UploadFormData) => {
-      const formData = new FormData();
-      formData.append("file", data.file[0]);
-      formData.append("title", data.title);
-      if (data.description) formData.append("description", data.description);
-      if (data.author) formData.append("author", data.author);
-
       // Get the current user's ID
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error("User not authenticated");
       }
 
-      const { data: response, error } = await supabase.functions.invoke("upload-pdf", {
-        body: formData,
-        headers: {
-          'x-user-id': user.id,
-        }
-      });
+      // First, upload the file to storage
+      const file = data.file[0];
+      const sanitizedFileName = file.name.replace(/[^\x00-\x7F]/g, '');
+      const fileExt = sanitizedFileName.split('.').pop();
+      const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
-      if (error) {
-        throw error;
+      const { error: uploadError } = await supabase.storage
+        .from('pdf-storage')
+        .upload(filePath, file, {
+          contentType: 'application/pdf',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error("Storage upload error:", uploadError);
+        throw new Error("Failed to upload file to storage");
       }
 
-      return response;
+      // Then create the database record
+      const { error: dbError } = await supabase
+        .from('pdfs')
+        .insert({
+          title: data.title,
+          description: data.description || null,
+          file_path: filePath,
+          thumbnail_path: null,
+          author: data.author || null,
+          views: 0,
+          user_id: user.id
+        });
+
+      if (dbError) {
+        console.error("Database insert error:", dbError);
+        throw new Error("Failed to create PDF record");
+      }
+
+      return { filePath };
     },
     onSuccess: () => {
       toast({
