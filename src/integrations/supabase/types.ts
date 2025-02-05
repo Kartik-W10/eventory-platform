@@ -90,6 +90,7 @@ export type Database = {
           id: string
           location: string
           price: number
+          registration_deadline: string | null
           time: string
           title: string
         }
@@ -102,6 +103,7 @@ export type Database = {
           id?: string
           location: string
           price?: number
+          registration_deadline?: string | null
           time: string
           title: string
         }
@@ -114,6 +116,7 @@ export type Database = {
           id?: string
           location?: string
           price?: number
+          registration_deadline?: string | null
           time?: string
           title?: string
         }
