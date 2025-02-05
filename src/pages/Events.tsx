@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, Clock, MapPin, Search, Plus, Edit, Trash } from "lucide-react";
@@ -194,136 +195,138 @@ const Events = () => {
 
         {/* Event Form Dialog */}
         <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Event</DialogTitle>
             </DialogHeader>
             <Form {...eventForm}>
-              <form onSubmit={eventForm.handleSubmit(handleSubmitEvent)} className="space-y-4">
-                <FormField
-                  control={eventForm.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={eventForm.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={eventForm.control}
-                  name="date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={eventForm.control}
-                  name="time"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Time</FormLabel>
-                      <FormControl>
-                        <Input type="time" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={eventForm.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Location</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={eventForm.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <FormControl>
-                        <select {...field} className="w-full p-2 border rounded">
-                          {categories.map((cat) => (
-                            <option key={cat.value} value={cat.value}>
-                              {cat.label}
-                            </option>
-                          ))}
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={eventForm.control}
-                  name="capacity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Capacity</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={eventForm.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Price</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.01" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={eventForm.control}
-                  name="registration_deadline"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Registration Deadline</FormLabel>
-                      <FormControl>
-                        <Input type="datetime-local" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full">Create Event</Button>
+              <form onSubmit={eventForm.handleSubmit(handleSubmitEvent)} className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={eventForm.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Title</FormLabel>
+                        <FormControl>
+                          <Input {...field} className="w-full" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={eventForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} className="h-20" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={eventForm.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Date</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={eventForm.control}
+                    name="time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Time</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={eventForm.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Location</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={eventForm.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <FormControl>
+                          <select {...field} className="w-full p-2 border rounded">
+                            {categories.map((cat) => (
+                              <option key={cat.value} value={cat.value}>
+                                {cat.label}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={eventForm.control}
+                    name="capacity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Capacity</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={eventForm.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Price</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={eventForm.control}
+                    name="registration_deadline"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Registration Deadline</FormLabel>
+                        <FormControl>
+                          <Input type="datetime-local" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <Button type="submit" className="w-full mt-4">Create Event</Button>
               </form>
             </Form>
           </DialogContent>
@@ -331,7 +334,7 @@ const Events = () => {
 
         {/* Event Details Dialog */}
         <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="max-w-lg">
             {selectedEvent && (
               <>
                 <DialogHeader>
