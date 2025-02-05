@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, Clock, MapPin, Search, Plus, Edit, Trash } from "lucide-react";
 import { format } from "date-fns";
@@ -47,6 +46,11 @@ const Events = () => {
       setIsAdmin(!!data);
     }
   };
+
+  // Call checkAdminStatus when component mounts
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
 
   // Fetch events from Supabase
   const { data: events = [], isLoading, refetch } = useQuery({
@@ -483,4 +487,3 @@ const Events = () => {
 };
 
 export default Events;
-
