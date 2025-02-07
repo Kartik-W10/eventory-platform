@@ -61,8 +61,8 @@ export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) 
     );
   }
 
-  // Only show details if user is registered or admin
-  if (!registrationStatus.isRegistered && !registrationStatus.isAdmin) {
+  // Only show basic details if user is not registered
+  if (!registrationStatus.isRegistered) {
     return (
       <div className="space-y-4">
         <p className="text-gray-600">Register to see full event details.</p>
@@ -88,7 +88,7 @@ export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) 
     );
   }
 
-  // Show full details for registered users and admins
+  // Show full details for registered users (including admins)
   return (
     <div className="space-y-4">
       <p className="text-gray-600">{event.description}</p>
@@ -109,7 +109,8 @@ export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) 
           <h4 className="font-semibold">Price</h4>
           <p>${event.price.toFixed(2)}</p>
         </div>
-        {event.google_meet_link && (
+        {/* Only show Google Meet link if user is registered */}
+        {registrationStatus.isRegistered && event.google_meet_link && (
           <div className="col-span-2">
             <h4 className="font-semibold">Google Meet Link</h4>
             <a
@@ -125,9 +126,6 @@ export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) 
       </div>
       <div className="flex justify-end gap-2">
         <Button variant="outline" onClick={onClose}>Close</Button>
-        {!registrationStatus.isRegistered && (
-          <Button onClick={() => onRegister(event)}>Register Now</Button>
-        )}
       </div>
     </div>
   );
