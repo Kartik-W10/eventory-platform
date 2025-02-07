@@ -87,6 +87,7 @@ export type Database = {
           created_at: string | null
           date: string
           description: string | null
+          google_meet_link: string | null
           id: string
           location: string
           price: number
@@ -100,6 +101,7 @@ export type Database = {
           created_at?: string | null
           date: string
           description?: string | null
+          google_meet_link?: string | null
           id?: string
           location: string
           price?: number
@@ -113,6 +115,7 @@ export type Database = {
           created_at?: string | null
           date?: string
           description?: string | null
+          google_meet_link?: string | null
           id?: string
           location?: string
           price?: number

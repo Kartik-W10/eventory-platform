@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, Clock, MapPin, Search, Plus, Edit, Trash } from "lucide-react";
@@ -98,6 +97,7 @@ const Events = () => {
       capacity: 100,
       price: 0,
       registration_deadline: "",
+      google_meet_link: "",
     },
   });
 
@@ -149,19 +149,53 @@ const Events = () => {
     }
   };
 
-  const handleRegister = async (eventId: string) => {
+  const handleRegister = async (event: Event) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Please log in",
+          description: "You need to be logged in to register for events.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase.from("event_registrations").insert({
-        event_id: eventId,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
+        event_id: event.id,
+        user_id: user.id,
         payment_status: "pending",
       });
 
       if (error) throw error;
 
+      // Send confirmation email
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-event-confirmation`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            userEmail: user.email,
+            eventTitle: event.title,
+            eventDate: format(new Date(event.date), "MMMM d, yyyy"),
+            eventTime: event.time,
+            eventLocation: event.location,
+            googleMeetLink: event.google_meet_link,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to send confirmation email");
+      }
+
       toast({
         title: "Registration successful!",
-        description: "You have been registered for this event.",
+        description: "You have been registered for this event. Check your email for confirmation.",
       });
     } catch (error) {
       console.error("Registration error:", error);
@@ -325,6 +359,19 @@ const Events = () => {
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={eventForm.control}
+                    name="google_meet_link"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Google Meet Link (Optional)</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="https://meet.google.com/..." />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <Button type="submit" className="w-full mt-4">Create Event</Button>
               </form>
@@ -359,8 +406,21 @@ const Events = () => {
                       <h4 className="font-semibold">Price</h4>
                       <p>${selectedEvent.price.toFixed(2)}</p>
                     </div>
+                    {selectedEvent.google_meet_link && (
+                      <div className="col-span-2">
+                        <h4 className="font-semibold">Google Meet Link</h4>
+                        <a
+                          href={selectedEvent.google_meet_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:text-blue-600"
+                        >
+                          Join Meeting
+                        </a>
+                      </div>
+                    )}
                   </div>
-                  <Button onClick={() => handleRegister(selectedEvent.id)} className="w-full">
+                  <Button onClick={() => handleRegister(selectedEvent)} className="w-full">
                     Register Now
                   </Button>
                 </div>

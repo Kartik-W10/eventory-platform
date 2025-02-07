@@ -1,3 +1,4 @@
+
 export type Event = {
   id: string;
   title: string;
@@ -8,6 +9,7 @@ export type Event = {
   category: 'live_session' | 'webinar' | 'workshop' | 'short_course';
   capacity: number;
   price: number;
+  google_meet_link?: string;
 };
 
 export type EventFilters = {
