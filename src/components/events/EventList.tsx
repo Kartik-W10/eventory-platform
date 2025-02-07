@@ -9,7 +9,7 @@ interface EventListProps {
   isAdmin: boolean;
   onViewDetails: (event: Event) => void;
   onEdit: (event: Event) => void;
-  onDelete: (eventId: string) => void;
+  onDelete: (eventId: string) => void;  // Changed this line to expect string
 }
 
 export const EventList = ({ events, isAdmin, onViewDetails, onEdit, onDelete }: EventListProps) => {
