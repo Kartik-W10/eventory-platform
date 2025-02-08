@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Plus } from "lucide-react";
@@ -105,27 +104,21 @@ const Events = () => {
 
       if (error) throw error;
 
+      console.log("Sending confirmation email to:", user.email);
+      
       // Send confirmation email
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-event-confirmation`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            userEmail: user.email,
-            eventTitle: event.title,
-            eventDate: format(new Date(event.date), "MMMM d, yyyy"),
-            eventTime: event.time,
-            eventLocation: event.location,
-            googleMeetLink: event.google_meet_link,
-          }),
-        }
-      );
+      const response = await supabase.functions.invoke('send-event-confirmation', {
+        body: {
+          userEmail: user.email,
+          eventTitle: event.title,
+          eventDate: format(new Date(event.date), "MMMM d, yyyy"),
+          eventTime: event.time,
+          eventLocation: event.location,
+          googleMeetLink: event.google_meet_link,
+        },
+      });
 
-      if (!response.ok) {
+      if (!response.data) {
         throw new Error("Failed to send confirmation email");
       }
 
@@ -292,4 +285,3 @@ const Events = () => {
 };
 
 export default Events;
-

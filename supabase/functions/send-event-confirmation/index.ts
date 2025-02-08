@@ -34,6 +34,9 @@ const handler = async (req: Request): Promise<Response> => {
       googleMeetLink,
     }: EventConfirmationRequest = await req.json();
 
+    console.log("Sending confirmation email for event:", eventTitle);
+    console.log("To email:", userEmail);
+
     const meetingDetails = googleMeetLink
       ? `<p>Join the meeting using this link: <a href="${googleMeetLink}">${googleMeetLink}</a></p>`
       : "";
@@ -52,6 +55,8 @@ const handler = async (req: Request): Promise<Response> => {
         <p>Thank you for registering! We look forward to seeing you at the event.</p>
       `,
     });
+
+    console.log("Email sent successfully:", emailResponse);
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
