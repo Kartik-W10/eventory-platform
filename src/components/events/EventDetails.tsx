@@ -27,7 +27,7 @@ export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) 
         .from("admin_users")
         .select()
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       // Check if user is registered for this event
       const { data: registrationData } = await supabase
@@ -35,7 +35,7 @@ export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) 
         .select()
         .eq("event_id", event.id)
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       return {
         isAuthenticated: true,
