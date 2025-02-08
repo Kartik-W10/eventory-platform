@@ -1,6 +1,7 @@
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { File, Download, Eye, Calendar } from "lucide-react";
+import { File, Download, Eye, Calendar, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
 interface PDF {
@@ -17,9 +18,11 @@ interface PDF {
 interface PDFGridProps {
   pdfs: PDF[];
   onPreview: (pdfPath: string) => void;
+  onDelete?: (id: string, filePath: string) => void;
+  isAdmin?: boolean;
 }
 
-export const PDFGrid = ({ pdfs, onPreview }: PDFGridProps) => {
+export const PDFGrid = ({ pdfs, onPreview, onDelete, isAdmin }: PDFGridProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {pdfs?.map((pdf) => (
@@ -59,14 +62,27 @@ export const PDFGrid = ({ pdfs, onPreview }: PDFGridProps) => {
                 </div>
               )}
               <div className="flex justify-between items-center pt-2 border-t">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => onPreview(pdf.file_path)}
-                  className="hover:bg-primary hover:text-primary-foreground"
-                >
-                  Preview
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => onPreview(pdf.file_path)}
+                    className="hover:bg-primary hover:text-primary-foreground"
+                  >
+                    Preview
+                  </Button>
+                  {isAdmin && onDelete && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => onDelete(pdf.id, pdf.file_path)}
+                      className="flex items-center gap-1"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </Button>
+                  )}
+                </div>
                 <a
                   href={`https://rtwspqivpnjszjvjspbw.supabase.co/storage/v1/object/public/pdf-storage/${pdf.file_path}`}
                   target="_blank"
