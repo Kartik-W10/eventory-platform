@@ -25,12 +25,21 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!stripe || !elements) return;
+    if (!stripe || !elements) {
+      console.error("Stripe not initialized");
+      return;
+    }
 
     setIsProcessing(true);
 
     try {
-      const { error } = await stripe.confirmPayment({
+      console.log("Starting payment confirmation...");
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        throw submitError;
+      }
+
+      const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           return_url: window.location.href,
@@ -38,18 +47,29 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
         redirect: "if_required",
       });
 
+      console.log("Payment confirmation result:", { error, paymentIntent });
+
       if (error) {
+        console.error("Payment error:", error);
         toast({
           title: "Payment failed",
-          description: error.message,
+          description: error.message || "Please try again or contact support.",
           variant: "destructive",
         });
-      } else {
+      } else if (paymentIntent && paymentIntent.status === "succeeded") {
+        console.log("Payment successful");
         toast({
           title: "Payment successful!",
           description: "You have been registered for the event.",
         });
         onSuccess();
+      } else {
+        console.error("Unexpected payment state:", paymentIntent?.status);
+        toast({
+          title: "Payment status unclear",
+          description: "Please contact support to confirm your registration.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Payment error:", error);

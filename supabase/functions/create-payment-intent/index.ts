@@ -9,12 +9,18 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Creating payment intent...");
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       httpClient: Stripe.createFetchHttpClient(),
       apiVersion: '2023-10-16',
     });
 
     const { amount, eventId, userId } = await req.json();
+    console.log("Received payment request:", { amount, eventId, userId });
+
+    if (!amount || !eventId || !userId) {
+      throw new Error("Missing required fields: amount, eventId, or userId");
+    }
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Convert to cents
@@ -25,8 +31,10 @@ serve(async (req) => {
       },
     });
 
+    console.log("Payment intent created:", paymentIntent.id);
+
     // Create payment record in database
-    const { data: supabaseClient } = await fetch(
+    const { data: supabaseClient, error: dbError } = await fetch(
       Deno.env.get('SUPABASE_URL') + '/rest/v1/payments',
       {
         method: 'POST',
@@ -45,6 +53,13 @@ serve(async (req) => {
       }
     ).then(res => res.json());
 
+    if (dbError) {
+      console.error("Database error:", dbError);
+      throw new Error("Failed to create payment record");
+    }
+
+    console.log("Payment record created in database");
+
     return new Response(
       JSON.stringify({ clientSecret: paymentIntent.client_secret }),
       {
@@ -52,8 +67,12 @@ serve(async (req) => {
       },
     );
   } catch (error) {
+    console.error("Error in create-payment-intent:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.toString()
+      }),
       {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
