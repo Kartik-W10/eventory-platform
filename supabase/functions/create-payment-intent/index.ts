@@ -34,14 +34,15 @@ serve(async (req) => {
     console.log("Payment intent created:", paymentIntent.id);
 
     // Create payment record in database
-    const { data: supabaseClient, error: dbError } = await fetch(
-      Deno.env.get('SUPABASE_URL') + '/rest/v1/payments',
+    const response = await fetch(
+      `${Deno.env.get('SUPABASE_URL')}/rest/v1/payments`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'ApiKey': Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '',
           'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+          'Prefer': 'return=minimal', // Don't return the inserted row
         },
         body: JSON.stringify({
           amount,
@@ -51,10 +52,11 @@ serve(async (req) => {
           status: 'pending',
         }),
       }
-    ).then(res => res.json());
+    );
 
-    if (dbError) {
-      console.error("Database error:", dbError);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Database error response:", errorText);
       throw new Error("Failed to create payment record");
     }
 
