@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Plus } from "lucide-react";
@@ -14,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { EventForm } from "@/components/events/EventForm";
 import { EventDetails } from "@/components/events/EventDetails";
 import { EventList } from "@/components/events/EventList";
+import { PaymentModal } from "@/components/events/PaymentModal";
 import type { Event, EventFilters } from "@/types/events";
 
 const categories = [
@@ -34,8 +34,9 @@ const Events = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showEventForm, setShowEventForm] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
-  // Check if user is admin
   const checkAdminStatus = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
@@ -52,7 +53,6 @@ const Events = () => {
     checkAdminStatus();
   }, []);
 
-  // Fetch events from Supabase
   const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ["events", filters, selectedDate],
     queryFn: async () => {
@@ -107,15 +107,43 @@ const Events = () => {
 
       console.log("Sending confirmation email to:", user.email);
       
-      // Send confirmation email
+      const response = await supabase.functions.invoke('create-payment-intent', {
+        body: {
+          amount: event.price,
+          eventId: event.id,
+          userId: user.id,
+        },
+      });
+
+      if (response.error) throw response.error;
+
+      setClientSecret(response.data.clientSecret);
+      setShowPaymentModal(true);
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Registration failed",
+        description: "Please try again or contact support.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePaymentSuccess = async () => {
+    try {
+      console.log("Sending confirmation email...");
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !selectedEvent) return;
+
       const response = await supabase.functions.invoke('send-event-confirmation', {
         body: {
           userEmail: user.email,
-          eventTitle: event.title,
-          eventDate: format(new Date(event.date), "MMMM d, yyyy"),
-          eventTime: event.time,
-          eventLocation: event.location,
-          googleMeetLink: event.google_meet_link,
+          eventTitle: selectedEvent.title,
+          eventDate: format(new Date(selectedEvent.date), "MMMM d, yyyy"),
+          eventTime: selectedEvent.time,
+          eventLocation: selectedEvent.location,
+          googleMeetLink: selectedEvent.google_meet_link,
         },
       });
 
@@ -123,16 +151,14 @@ const Events = () => {
         throw new Error("Failed to send confirmation email");
       }
 
-      toast({
-        title: "Registration successful!",
-        description: "You have been registered for this event. Check your email for confirmation.",
-      });
+      setShowPaymentModal(false);
       setSelectedEvent(null);
+      refetch();
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Error sending confirmation:", error);
       toast({
-        title: "Registration failed",
-        description: "Please try again or contact support.",
+        title: "Error sending confirmation",
+        description: "Please contact support.",
         variant: "destructive",
       });
     }
@@ -172,7 +198,6 @@ const Events = () => {
           </p>
         </div>
 
-        {/* Admin Controls */}
         {isAdmin && (
           <div className="mb-8">
             <Button onClick={() => setShowEventForm(true)} className="flex items-center gap-2">
@@ -182,7 +207,6 @@ const Events = () => {
           </div>
         )}
 
-        {/* Event Form Dialog */}
         <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -198,7 +222,6 @@ const Events = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Event Details Dialog */}
         <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
           <DialogContent className="max-w-lg">
             {selectedEvent && (
@@ -216,7 +239,6 @@ const Events = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Filters Section */}
         <div className="mb-8 space-y-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
@@ -253,7 +275,6 @@ const Events = () => {
             </div>
           </div>
 
-          {/* Calendar Filter */}
           <div className="bg-white p-4 rounded-lg shadow-sm">
             <h3 className="text-lg font-semibold mb-4">Filter by Date</h3>
             <CalendarComponent
@@ -265,7 +286,6 @@ const Events = () => {
           </div>
         </div>
 
-        {/* Events List */}
         {isLoading ? (
           <div className="text-center">Loading events...</div>
         ) : (
@@ -278,6 +298,16 @@ const Events = () => {
               setShowEventForm(true);
             }}
             onDelete={handleDeleteEvent}
+          />
+        )}
+
+        {selectedEvent && (
+          <PaymentModal
+            event={selectedEvent}
+            isOpen={showPaymentModal}
+            onClose={() => setShowPaymentModal(false)}
+            onSuccess={handlePaymentSuccess}
+            clientSecret={clientSecret}
           />
         )}
       </div>
