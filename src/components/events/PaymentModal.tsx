@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Event } from "@/types/events";
-import type { StripeElementsOptions } from "@stripe/stripe-js";
+import type { StripeElementsOptions, Appearance } from "@stripe/stripe-js";
 
 // Initialize Stripe
 const stripePromise = loadStripe("pk_test_51OyQfHJhDOOVVZXxHZNFLPjbHedD9pALtAHj7GaJF4i0Hht8r3NhqxPBnmUEPaUH7zDKmgWkwPnYnRHsXEXBMivd00iuIgPHCI");
@@ -94,11 +94,13 @@ export const PaymentModal = ({
 }: PaymentModalProps) => {
   if (!clientSecret) return null;
 
+  const appearance: Appearance = {
+    theme: 'stripe',
+  };
+
   const options: StripeElementsOptions = {
     clientSecret,
-    appearance: {
-      theme: 'stripe',
-    } as const,
+    appearance,
   };
 
   return (
