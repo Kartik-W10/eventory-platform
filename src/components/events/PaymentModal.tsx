@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -7,14 +7,14 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Event } from "@/types/events";
 import type { StripeElementsOptions, Appearance } from "@stripe/stripe-js";
 
 // Initialize Stripe
-const stripePromise = loadStripe("pk_test_51OyQfHJhDOOVVZXxHZNFLPjbHedD9pALtAHj7GaJF4i0Hht8r3NhqxPBnmUEPaUH7zDKmgWkwPnYnRHsXEXBMivd00iuIgPHCI");
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const stripe = useStripe();
@@ -33,7 +33,6 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
     setIsProcessing(true);
 
     try {
-      console.log("Starting payment confirmation...");
       const { error: submitError } = await elements.submit();
       if (submitError) {
         throw submitError;
@@ -47,40 +46,27 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
         redirect: "if_required",
       });
 
-      console.log("Payment confirmation result:", { error, paymentIntent });
-
       if (error) {
-        console.error("Payment error:", error);
-        toast({
-          title: "Payment failed",
-          description: error.message || "Please try again or contact support.",
-          variant: "destructive",
-        });
+        throw error;
       } else if (paymentIntent && paymentIntent.status === "succeeded") {
-        console.log("Payment successful");
         toast({
           title: "Payment successful!",
           description: "You have been registered for the event.",
         });
         onSuccess();
       } else {
-        console.error("Unexpected payment state:", paymentIntent?.status);
-        toast({
-          title: "Payment status unclear",
-          description: "Please contact support to confirm your registration.",
-          variant: "destructive",
-        });
+        throw new Error(`Unexpected payment state: ${paymentIntent?.status}`);
       }
     } catch (error) {
       console.error("Payment error:", error);
       toast({
         title: "Payment failed",
-        description: "Please try again or contact support.",
+        description: error.message || "Please try again or contact support.",
         variant: "destructive",
       });
+    } finally {
+      setIsProcessing(false);
     }
-
-    setIsProcessing(false);
   };
 
   return (
@@ -112,10 +98,23 @@ export const PaymentModal = ({
   onSuccess,
   clientSecret,
 }: PaymentModalProps) => {
-  if (!clientSecret) return null;
+  const [stripeLoaded, setStripeLoaded] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && clientSecret) {
+      setStripeLoaded(true);
+    } else {
+      setStripeLoaded(false);
+    }
+  }, [isOpen, clientSecret]);
+
+  if (!clientSecret || !stripeLoaded) return null;
 
   const appearance: Appearance = {
     theme: 'stripe',
+    variables: {
+      colorPrimary: '#0F172A',
+    },
   };
 
   const options: StripeElementsOptions = {
@@ -128,6 +127,9 @@ export const PaymentModal = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Payment for {event.title}</DialogTitle>
+          <DialogDescription>
+            Please enter your payment details below to complete your registration.
+          </DialogDescription>
         </DialogHeader>
         <div className="mt-4">
           <Elements stripe={stripePromise} options={options}>
