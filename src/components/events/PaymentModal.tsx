@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
@@ -70,11 +71,13 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement />
+      <div className="max-h-[60vh] overflow-y-auto px-1">
+        <PaymentElement />
+      </div>
       <Button
         type="submit"
         disabled={!stripe || isProcessing}
-        className="w-full"
+        className="w-full mt-4"
       >
         {isProcessing ? "Processing..." : "Pay Now"}
       </Button>
@@ -113,6 +116,19 @@ export const PaymentModal = ({
     theme: 'stripe',
     variables: {
       colorPrimary: '#0F172A',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      borderRadius: '0.5rem',
+      fontSizeBase: '14px',
+      spacingUnit: '4px',
+      spacingGridRow: '16px',
+    },
+    rules: {
+      '.Input': {
+        padding: '8px 12px',
+      },
+      '.Label': {
+        marginBottom: '4px',
+      },
     },
   };
 
@@ -123,14 +139,14 @@ export const PaymentModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Payment for {event.title}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-w-md w-full mx-auto">
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="text-xl">Payment for {event.title}</DialogTitle>
+          <DialogDescription className="text-sm">
             Please enter your payment details below to complete your registration.
           </DialogDescription>
         </DialogHeader>
-        <div className="mt-4">
+        <div className="mt-2">
           <Elements stripe={stripePromise} options={options}>
             <CheckoutForm onSuccess={onSuccess} />
           </Elements>
