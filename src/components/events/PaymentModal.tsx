@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
@@ -13,8 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import type { Event } from "@/types/events";
 import type { StripeElementsOptions, Appearance } from "@stripe/stripe-js";
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+// Initialize Stripe with the provided publishable key
+const stripePromise = loadStripe("pk_test_51Qh6DyBVN5b0WyKwvpHIuEAerxbKa8R6IEvIgqwBODIJKTSEJDipIvYG1wRu1j2uK22bnhCk3EeU13veyYMqQCb600haItOk7h");
 
 const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const stripe = useStripe();
