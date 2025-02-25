@@ -125,6 +125,51 @@ export type Database = {
         }
         Relationships: []
       }
+      meeting_preferences: {
+        Row: {
+          availability_end: string | null
+          availability_start: string | null
+          available_days: number[] | null
+          buffer_time: number | null
+          calendar_type: string | null
+          created_at: string | null
+          description: string | null
+          duration_options: number[] | null
+          id: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          availability_end?: string | null
+          availability_start?: string | null
+          available_days?: number[] | null
+          buffer_time?: number | null
+          calendar_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_options?: number[] | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          availability_end?: string | null
+          availability_start?: string | null
+          available_days?: number[] | null
+          buffer_time?: number | null
+          calendar_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_options?: number[] | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -202,6 +247,51 @@ export type Database = {
           upload_date?: string | null
           user_id?: string
           views?: number | null
+        }
+        Relationships: []
+      }
+      scheduled_meetings: {
+        Row: {
+          calendar_event_id: string | null
+          created_at: string | null
+          duration: number
+          end_time: string
+          guest_email: string
+          guest_name: string
+          host_id: string
+          id: string
+          notes: string | null
+          start_time: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          calendar_event_id?: string | null
+          created_at?: string | null
+          duration: number
+          end_time: string
+          guest_email: string
+          guest_name: string
+          host_id: string
+          id?: string
+          notes?: string | null
+          start_time: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          calendar_event_id?: string | null
+          created_at?: string | null
+          duration?: number
+          end_time?: string
+          guest_email?: string
+          guest_name?: string
+          host_id?: string
+          id?: string
+          notes?: string | null
+          start_time?: string
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
