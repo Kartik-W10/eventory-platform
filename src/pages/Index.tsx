@@ -1,8 +1,20 @@
 
 import { ArrowRight, Calendar, Users, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 const Index = () => {
+  useEffect(() => {
+    // Initialize Cal.com inline embed
+    (async function () {
+      const Cal = await (await import("@calcom/embed-react")).default;
+      Cal("inline", {
+        elementOrSelector: "#my-cal-inline",
+        calLink: "your-username", // Replace with your Cal.com username
+      });
+    })();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -23,14 +35,17 @@ const Index = () => {
                 Learn More
                 <ArrowRight className="ml-2" />
               </Link>
-              <Link
-                to="/book-meeting"
-                className="inline-flex items-center bg-primary text-white border-2 border-white px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors animate-fade-up"
-              >
-                Book a Meeting
-                <Calendar className="ml-2 h-5 w-5" />
-              </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Cal.com Embed Section */}
+      <section className="py-20 bg-background">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-8">Schedule a Meeting</h2>
+          <div className="bg-white rounded-lg shadow-lg">
+            <div id="my-cal-inline" style={{ minHeight: "600px" }} />
           </div>
         </div>
       </section>
