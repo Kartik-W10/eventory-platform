@@ -1,8 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Plus } from "lucide-react";
 import { format } from "date-fns";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -30,7 +30,6 @@ const Events = () => {
     category: "all",
     searchQuery: "",
   });
-  const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showEventForm, setShowEventForm] = useState(false);
@@ -54,7 +53,7 @@ const Events = () => {
   }, []);
 
   const { data: events = [], isLoading, refetch } = useQuery({
-    queryKey: ["events", filters, selectedDate],
+    queryKey: ["events", filters],
     queryFn: async () => {
       let query = supabase
         .from("events")
@@ -67,11 +66,6 @@ const Events = () => {
 
       if (filters.searchQuery) {
         query = query.ilike("title", `%${filters.searchQuery}%`);
-      }
-
-      if (selectedDate) {
-        const dateStr = format(selectedDate, "yyyy-MM-dd");
-        query = query.gte("date", dateStr).lt("date", dateStr + "T23:59:59");
       }
 
       const { data, error } = await query;
@@ -273,16 +267,6 @@ const Events = () => {
                 ))}
               </RadioGroup>
             </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold mb-4">Filter by Date</h3>
-            <CalendarComponent
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              className="rounded-md border"
-            />
           </div>
         </div>
 
