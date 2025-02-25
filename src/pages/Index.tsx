@@ -1,3 +1,4 @@
+
 import { ArrowRight, Calendar, Users, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -14,13 +15,22 @@ const Index = () => {
             <p className="text-xl md:text-2xl mb-8 animate-fade-up">
               Empowering professionals through expert guidance and resources
             </p>
-            <Link
-              to="/about"
-              className="inline-flex items-center bg-secondary text-primary px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors animate-fade-up"
-            >
-              Learn More
-              <ArrowRight className="ml-2" />
-            </Link>
+            <div className="space-x-4">
+              <Link
+                to="/about"
+                className="inline-flex items-center bg-secondary text-primary px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors animate-fade-up"
+              >
+                Learn More
+                <ArrowRight className="ml-2" />
+              </Link>
+              <Link
+                to="/book-meeting"
+                className="inline-flex items-center bg-primary text-white border-2 border-white px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors animate-fade-up"
+              >
+                Book a Meeting
+                <Calendar className="ml-2 h-5 w-5" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
