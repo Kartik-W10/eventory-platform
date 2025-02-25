@@ -23,6 +23,46 @@ const MeetingBooking = () => {
     },
   ];
 
+  const createGoogleCalendarLink = (duration: string) => {
+    // Base event details
+    const eventDetails = {
+      title: `1:1 Meeting with John Doe - ${duration} Session`,
+      description: "Virtual meeting for collaboration and discussion.\n\nGoogle Meet link will be shared in the calendar event.",
+      location: "Google Meet (link will be provided)",
+      // Set duration in minutes
+      duration: duration === "30 min" ? 30 : 60,
+    };
+
+    // Create a URL-encoded string for Google Calendar
+    const baseUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE";
+    const today = new Date();
+    // Set the date to tomorrow at 10 AM
+    const startDate = new Date(today.setDate(today.getDate() + 1));
+    startDate.setHours(10, 0, 0, 0);
+    
+    const endDate = new Date(startDate.getTime());
+    endDate.setMinutes(startDate.getMinutes() + eventDetails.duration);
+
+    const formatDate = (date: Date) => {
+      return date.toISOString().replace(/-|:|\.\d\d\d/g, "");
+    };
+
+    const params = new URLSearchParams({
+      action: "TEMPLATE",
+      text: eventDetails.title,
+      details: eventDetails.description,
+      location: eventDetails.location,
+      dates: `${formatDate(startDate)}/${formatDate(endDate)}`,
+    });
+
+    return `${baseUrl}&${params.toString()}`;
+  };
+
+  const handleScheduleMeeting = (duration: string) => {
+    const calendarLink = createGoogleCalendarLink(duration);
+    window.open(calendarLink, "_blank");
+  };
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl">
       <div className="text-center mb-12">
@@ -46,7 +86,11 @@ const MeetingBooking = () => {
               <CardDescription>{option.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" size="lg">
+              <Button 
+                className="w-full" 
+                size="lg"
+                onClick={() => handleScheduleMeeting(option.duration)}
+              >
                 Schedule {option.duration} Meeting
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
