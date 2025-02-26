@@ -1,24 +1,8 @@
 
 import { ArrowRight, Calendar, Users, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
 
 const Index = () => {
-  useEffect(() => {
-    // Initialize Cal.com inline embed
-    (async function () {
-      const Cal = await (await import("@calcom/embed-react")).default;
-      Cal({
-        elementOrSelector: "#calendar",
-        calLink: "kartik-wadate-kmv2pv",
-        config: {
-          layout: "month_view",
-          hideEventTypeDetails: "false"
-        }
-      });
-    })();
-  }, []);
-
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -40,19 +24,6 @@ const Index = () => {
                 <ArrowRight className="ml-2" />
               </Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Cal.com Embed Section */}
-      <section className="py-20 bg-background">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">Schedule a Meeting</h2>
-          <div className="bg-white rounded-lg shadow-lg">
-            <div 
-              id="calendar"
-              style={{ width: '100%', height: '600px' }} 
-            />
           </div>
         </div>
       </section>
