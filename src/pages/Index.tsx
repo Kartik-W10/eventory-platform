@@ -8,9 +8,10 @@ const Index = () => {
     // Initialize Cal.com inline embed
     (async function () {
       const Cal = await (await import("@calcom/embed-react")).default;
-      Cal("inline", {
-        elementOrSelector: "#my-cal-inline",
-        calLink: "your-username", // Replace with your Cal.com username
+      Cal("ui", {
+        styles: { backgroundColor: "white" },
+        hideEventTypeDetails: false,
+        layout: "month_view",
       });
     })();
   }, []);
@@ -45,7 +46,10 @@ const Index = () => {
         <div className="max-w-4xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-8">Schedule a Meeting</h2>
           <div className="bg-white rounded-lg shadow-lg">
-            <div id="my-cal-inline" style={{ minHeight: "600px" }} />
+            <cal-inline-widget 
+              style={{ width: '100%', height: '600px' }} 
+              data-cal-link="your-username">
+            </cal-inline-widget>
           </div>
         </div>
       </section>
