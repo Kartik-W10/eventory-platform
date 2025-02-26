@@ -8,9 +8,9 @@ const Index = () => {
     // Initialize Cal.com inline embed
     (async function () {
       const Cal = await (await import("@calcom/embed-react")).default;
-      Cal({
+      Cal("inline", {
         calLink: "kartik-wadate-kmv2pv",
-        element: "#calendar",
+        elementOrSelector: "#calendar",
         config: {
           layout: "month_view",
           hideEventTypeDetails: "false"
