@@ -48,7 +48,7 @@ const Index = () => {
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             <div 
               className="calendly-inline-widget" 
-              data-url="https://calendly.com/your-calendly-username"
+              data-url="https://calendly.com/kartikwadate65"
               style={{ minWidth: '320px', height: '700px' }} 
             />
           </div>
