@@ -9,11 +9,11 @@ const Index = () => {
     (async function () {
       const Cal = await (await import("@calcom/embed-react")).default;
       Cal({
-        calLink: "your-username",
+        calLink: "kartik-wadate-kmv2pv",
         element: "#calendar",
         config: {
           layout: "month_view",
-          hideEventTypeDetails: false,
+          hideEventTypeDetails: "false"
         }
       });
     })();
