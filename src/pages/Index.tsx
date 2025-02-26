@@ -1,21 +1,8 @@
 
 import { ArrowRight, Calendar, Users, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
 
 const Index = () => {
-  useEffect(() => {
-    const head = document.querySelector("head");
-    const script = document.createElement("script");
-    script.setAttribute("src", "https://assets.calendly.com/assets/external/widget.js");
-    head?.appendChild(script);
-
-    return () => {
-      // Cleanup script when component unmounts
-      head?.removeChild(script);
-    };
-  }, []);
-
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -37,20 +24,6 @@ const Index = () => {
                 <ArrowRight className="ml-2" />
               </Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Calendly Integration Section */}
-      <section className="py-20 bg-background">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">Schedule a Meeting</h2>
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div 
-              className="calendly-inline-widget" 
-              data-url="https://calendly.com/kartikwadate65"
-              style={{ minWidth: '320px', height: '700px' }} 
-            />
           </div>
         </div>
       </section>
