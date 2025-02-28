@@ -23,6 +23,13 @@ const Index = () => {
                 Learn More
                 <ArrowRight className="ml-2" />
               </Link>
+              <Link
+                to="/book-meeting"
+                className="inline-flex items-center bg-white text-primary px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors animate-fade-up"
+              >
+                Book a Meeting
+                <Calendar className="ml-2" />
+              </Link>
             </div>
           </div>
         </div>
@@ -61,16 +68,16 @@ const Index = () => {
             </div>
 
             <div className="p-6 bg-background rounded-lg card-hover">
-              <Mail className="w-12 h-12 text-secondary mb-4" />
-              <h3 className="text-xl font-bold mb-2">Get in Touch</h3>
+              <Calendar className="w-12 h-12 text-secondary mb-4" />
+              <h3 className="text-xl font-bold mb-2">Book a Meeting</h3>
               <p className="text-gray-600 mb-4">
-                Have questions? We're here to help you succeed.
+                Schedule a one-on-one session with one of our experts.
               </p>
               <Link
-                to="/contact"
+                to="/book-meeting"
                 className="text-primary hover:text-secondary font-medium inline-flex items-center"
               >
-                Contact Us <ArrowRight className="ml-2 w-4 h-4" />
+                Book Now <ArrowRight className="ml-2 w-4 h-4" />
               </Link>
             </div>
           </div>
