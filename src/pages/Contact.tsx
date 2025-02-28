@@ -1,31 +1,60 @@
+
 import { useState } from "react";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+// Define form schema with validation rules
+const formSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 const Contact = () => {
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Initialize React Hook Form
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      message: "",
+    },
+  });
+
+  const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     
     try {
-      console.log("Submitting contact form:", formData);
+      console.log("Submitting contact form:", data);
       
       const { error } = await supabase
         .from('contact_submissions')
         .insert([
           {
-            name: formData.name,
-            email: formData.email,
-            message: formData.message,
+            name: data.name,
+            email: data.email,
+            message: data.message,
           }
         ]);
 
@@ -36,7 +65,7 @@ const Contact = () => {
         description: "We'll get back to you as soon as possible.",
       });
       
-      setFormData({ name: "", email: "", message: "" });
+      form.reset();
     } catch (error) {
       console.error("Error submitting contact form:", error);
       toast({
@@ -47,13 +76,6 @@ const Contact = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -102,69 +124,64 @@ const Contact = () => {
 
           {/* Contact Form */}
           <div className="bg-white p-8 rounded-lg shadow-sm">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
                   name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  disabled={isSubmitting}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your name" {...field} disabled={isSubmitting} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
+                
+                <FormField
+                  control={form.control}
                   name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  disabled={isSubmitting}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="Your email address" {...field} disabled={isSubmitting} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Message
-                </label>
-                <textarea
-                  id="message"
+                
+                <FormField
+                  control={form.control}
                   name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Message</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="How can we help you?" 
+                          className="min-h-[120px]" 
+                          {...field} 
+                          disabled={isSubmitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button 
+                  type="submit" 
+                  className="w-full" 
                   disabled={isSubmitting}
-                  rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-secondary focus:border-transparent"
-                ></textarea>
-              </div>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-primary text-white px-6 py-3 rounded-md font-medium hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? "Sending..." : "Send Message"}
-              </button>
-            </form>
+                >
+                  {isSubmitting ? "Sending..." : "Send Message"}
+                </Button>
+              </form>
+            </Form>
           </div>
         </div>
       </div>
