@@ -3,6 +3,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { useSidebar } from "./sidebar-context"
+import { Menu } from "lucide-react"
 
 export const Sidebar = React.forwardRef<
   HTMLDivElement,
@@ -23,7 +24,7 @@ export const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const { isMobile, state, openMobile, setOpenMobile, toggleSidebar } = useSidebar()
 
     if (collapsible === "none") {
       return (
@@ -101,6 +102,20 @@ export const Sidebar = React.forwardRef<
             {children}
           </div>
         </div>
+        
+        {/* Menu icon that remains visible when sidebar is collapsed */}
+        {collapsible === "icon" && state === "collapsed" && (
+          <button 
+            className={cn(
+              "fixed z-20 p-2 bg-sidebar rounded-r-md",
+              side === "left" ? "left-[var(--sidebar-width-icon)] top-2" : "right-[var(--sidebar-width-icon)] top-2"
+            )}
+            onClick={toggleSidebar}
+            aria-label="Toggle sidebar"
+          >
+            <Menu className="h-5 w-5 text-secondary" />
+          </button>
+        )}
       </div>
     )
   }
