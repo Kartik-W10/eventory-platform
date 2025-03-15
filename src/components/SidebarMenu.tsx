@@ -11,6 +11,7 @@ import {
   FileText,
   ChevronDown,
   ChevronRight,
+  Menu,
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,19 +28,28 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar/sidebar-context";
 
 const SidebarMenuComponent = () => {
   const [projectsOpen, setProjectsOpen] = useState(false);
   const [downloadsOpen, setDownloadsOpen] = useState(false);
   const [publicationsOpen, setPublicationsOpen] = useState(false);
+  const { toggleSidebar, state } = useSidebar();
 
   return (
     <Sidebar side="left" variant="sidebar" collapsible="icon">
       <SidebarRail />
       <SidebarHeader className="px-4 py-2">
-        <Link to="/" className="text-xl font-bold text-sidebar-foreground">
-          YourBrand
-        </Link>
+        <div className="flex items-center">
+          <Menu 
+            className={`h-6 w-6 text-secondary cursor-pointer transition-transform duration-300 ${state === "expanded" ? "rotate-90" : ""}`} 
+            onClick={toggleSidebar}
+            aria-label="Toggle menu"
+          />
+          <span className={`ml-2 text-xl font-bold text-sidebar-foreground transition-opacity duration-300 ${state === "collapsed" ? "opacity-0" : "opacity-100"}`}>
+            YourBrand
+          </span>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
