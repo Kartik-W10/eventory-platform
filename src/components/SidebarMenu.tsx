@@ -54,13 +54,13 @@ const SidebarMenuComponent = () => {
                   <Briefcase className="h-4 w-4" />
                   <span>Projects</span>
                   {projectsOpen ? (
-                    <ChevronDown className="ml-auto h-4 w-4" />
+                    <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
                   ) : (
-                    <ChevronRight className="ml-auto h-4 w-4" />
+                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200" />
                   )}
                 </SidebarMenuButton>
                 {projectsOpen && (
-                  <SidebarMenuSub>
+                  <SidebarMenuSub className="animate-accordion-down">
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
                         <Link to="/projects/industrial">
@@ -89,13 +89,13 @@ const SidebarMenuComponent = () => {
                   <Download className="h-4 w-4" />
                   <span>Downloads</span>
                   {downloadsOpen ? (
-                    <ChevronDown className="ml-auto h-4 w-4" />
+                    <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
                   ) : (
-                    <ChevronRight className="ml-auto h-4 w-4" />
+                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200" />
                   )}
                 </SidebarMenuButton>
                 {downloadsOpen && (
-                  <SidebarMenuSub>
+                  <SidebarMenuSub className="animate-accordion-down">
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
                         <Link to="/downloads/code">
@@ -124,13 +124,13 @@ const SidebarMenuComponent = () => {
                   <FileText className="h-4 w-4" />
                   <span>Publications</span>
                   {publicationsOpen ? (
-                    <ChevronDown className="ml-auto h-4 w-4" />
+                    <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
                   ) : (
-                    <ChevronRight className="ml-auto h-4 w-4" />
+                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200" />
                   )}
                 </SidebarMenuButton>
                 {publicationsOpen && (
-                  <SidebarMenuSub>
+                  <SidebarMenuSub className="animate-accordion-down">
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
                         <Link to="/publications/newspaper">

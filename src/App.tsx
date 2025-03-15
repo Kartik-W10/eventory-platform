@@ -28,7 +28,7 @@ const App = () => (
         <SidebarProvider>
           <div className="min-h-screen flex w-full">
             <SidebarMenu />
-            <SidebarInset>
+            <SidebarInset className="transition-all duration-300 ease-in-out">
               <div className="flex flex-col min-h-screen">
                 <Navbar />
                 <main className="flex-grow">
