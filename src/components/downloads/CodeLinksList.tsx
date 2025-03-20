@@ -91,24 +91,24 @@ const CodeLinksList = ({ category, refreshTrigger = 0, isAdmin = false }: CodeLi
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {links.map((link) => (
         <Card key={link.id} className="flex flex-col h-full">
-          <CardHeader>
-            <CardTitle className="truncate" title={link.title}>
-              {link.title}
-            </CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="break-words text-xl">{link.title}</CardTitle>
             {link.description && (
-              <CardDescription className="line-clamp-2">{link.description}</CardDescription>
+              <CardDescription className="mt-2 line-clamp-3">{link.description}</CardDescription>
             )}
           </CardHeader>
-          <CardContent className="flex-grow">
-            <p className="text-sm text-muted-foreground truncate" title={link.url}>
+          <CardContent className="flex-grow pb-2">
+            <p className="text-sm text-muted-foreground overflow-hidden text-ellipsis break-words" 
+               style={{wordBreak: "break-all"}}>
               {link.url}
             </p>
           </CardContent>
-          <CardFooter className="flex justify-between pt-2">
+          <CardFooter className="pt-2 flex justify-between mt-auto">
             <Button 
               variant="default" 
               size="sm" 
               onClick={() => window.open(link.url, "_blank")}
+              className="flex-1 mr-2"
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               Open Link
