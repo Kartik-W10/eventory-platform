@@ -1,63 +1,76 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import SidebarMenu from "./components/SidebarMenu";
-import Index from "./pages/Index";
-import About from "./pages/About";
-import Events from "./pages/Events";
-import Contact from "./pages/Contact";
-import PDFs from "./pages/PDFs";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
-import MeetingBooking from "./pages/MeetingBooking";
+import { Toaster } from "@/components/ui/toaster";
+import { SidebarContextProvider } from "@/components/ui/sidebar/sidebar-context";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import SidebarMenu from "@/components/SidebarMenu";
+import Index from "@/pages/Index";
+import About from "@/pages/About";
+import Contact from "@/pages/Contact";
+import NotFound from "@/pages/NotFound";
+import Events from "@/pages/Events";
+import PDFs from "@/pages/PDFs";
+import Auth from "@/pages/Auth";
+import MeetingBooking from "@/pages/MeetingBooking";
+import CodePage from "@/pages/downloads/Code";
+import ResourcesPage from "@/pages/downloads/Resources";
+import { supabase } from "@/integrations/supabase/client";
+import "./App.css";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <SidebarProvider>
-          <div className="min-h-screen flex w-full">
-            <SidebarMenu />
-            <SidebarInset className="transition-all duration-300 ease-in-out">
-              <div className="flex flex-col min-h-screen">
-                <Navbar />
-                <main className="flex-grow">
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/events" element={<Events />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/pdfs" element={<PDFs />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/book-meeting" element={<MeetingBooking />} />
-                    {/* Add placeholder routes for new sidebar menu items */}
-                    <Route path="/projects/industrial" element={<NotFound />} />
-                    <Route path="/projects/academic" element={<NotFound />} />
-                    <Route path="/downloads/code" element={<NotFound />} />
-                    <Route path="/downloads/resources" element={<NotFound />} />
-                    <Route path="/publications/newspaper" element={<NotFound />} />
-                    <Route path="/publications/research" element={<NotFound />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </main>
-                <Footer />
-              </div>
-            </SidebarInset>
+function App() {
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SidebarContextProvider>
+        <Router>
+          <div className="flex min-h-screen flex-col">
+            <Navbar session={session} />
+            <div className="flex-1 flex">
+              <SidebarMenu />
+              <main className="flex-1">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/events" element={<Events />} />
+                  <Route path="/pdfs" element={<PDFs />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/meeting-booking" element={<MeetingBooking />} />
+                  <Route path="/downloads/code" element={<CodePage />} />
+                  <Route path="/downloads/resources" element={<ResourcesPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+            </div>
+            <Footer />
           </div>
-        </SidebarProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+        </Router>
+        <Toaster />
+      </SidebarContextProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
