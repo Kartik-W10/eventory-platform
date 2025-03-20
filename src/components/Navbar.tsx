@@ -5,25 +5,20 @@ import { Menu, X, LogIn, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Session } from "@supabase/supabase-js";
 
-const Navbar = () => {
+interface NavbarProps {
+  session: Session | null;
+}
+
+const Navbar = ({ session }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    setUser(session?.user ?? null);
+  }, [session]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
