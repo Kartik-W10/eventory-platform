@@ -90,25 +90,23 @@ const CodeLinksList = ({ category, refreshTrigger = 0, isAdmin = false }: CodeLi
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {links.map((link) => (
-        <Card key={link.id} className="flex flex-col h-full">
-          <CardHeader className="pb-3">
-            <CardTitle className="break-words text-xl">{link.title}</CardTitle>
+        <Card key={link.id}>
+          <CardHeader>
+            <CardTitle>{link.title}</CardTitle>
             {link.description && (
-              <CardDescription className="mt-2 line-clamp-3">{link.description}</CardDescription>
+              <CardDescription>{link.description}</CardDescription>
             )}
           </CardHeader>
-          <CardContent className="flex-grow pb-2">
-            <p className="text-sm text-muted-foreground overflow-hidden text-ellipsis break-words" 
-               style={{wordBreak: "break-all"}}>
+          <CardContent>
+            <p className="text-sm text-muted-foreground overflow-hidden text-ellipsis">
               {link.url}
             </p>
           </CardContent>
-          <CardFooter className="pt-2 flex justify-between mt-auto">
+          <CardFooter className="flex justify-between">
             <Button 
               variant="default" 
               size="sm" 
               onClick={() => window.open(link.url, "_blank")}
-              className="flex-1 mr-2"
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               Open Link
@@ -117,10 +115,11 @@ const CodeLinksList = ({ category, refreshTrigger = 0, isAdmin = false }: CodeLi
             {isAdmin && (
               <Button 
                 variant="destructive" 
-                size="icon" 
+                size="sm" 
                 onClick={() => handleDelete(link.id)}
               >
-                <Trash className="h-4 w-4" />
+                <Trash className="h-4 w-4 mr-2" />
+                Delete
               </Button>
             )}
           </CardFooter>
