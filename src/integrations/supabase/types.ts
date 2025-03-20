@@ -24,6 +24,36 @@ export type Database = {
         }
         Relationships: []
       }
+      code_links: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          title: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          title: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          title?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           created_at: string | null
