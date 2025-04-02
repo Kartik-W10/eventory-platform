@@ -80,24 +80,48 @@ export type Database = {
       }
       event_registrations: {
         Row: {
+          attendee_email: string | null
+          attendee_name: string | null
+          attendee_phone: string | null
           created_at: string | null
           event_id: string | null
           id: string
+          payment_notes: string | null
+          payment_proof_url: string | null
+          payment_qr_code: string | null
           payment_status: string
+          transaction_id: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
+          attendee_email?: string | null
+          attendee_name?: string | null
+          attendee_phone?: string | null
           created_at?: string | null
           event_id?: string | null
           id?: string
+          payment_notes?: string | null
+          payment_proof_url?: string | null
+          payment_qr_code?: string | null
           payment_status?: string
+          transaction_id?: string | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
+          attendee_email?: string | null
+          attendee_name?: string | null
+          attendee_phone?: string | null
           created_at?: string | null
           event_id?: string | null
           id?: string
+          payment_notes?: string | null
+          payment_proof_url?: string | null
+          payment_qr_code?: string | null
           payment_status?: string
+          transaction_id?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [

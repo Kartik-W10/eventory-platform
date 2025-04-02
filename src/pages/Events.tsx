@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Plus } from "lucide-react";
@@ -128,7 +127,8 @@ const Events = () => {
         description: "Your registration has been started. Please proceed with payment verification.",
       });
       
-      setCurrentRegistration(registration);
+      // TypeScript was complaining here - we need to explicitly cast to EventRegistration
+      setCurrentRegistration(registration as EventRegistration);
       setSelectedEvent(event);
       setShowPaymentVerification(true);
       refetchRegistrations();

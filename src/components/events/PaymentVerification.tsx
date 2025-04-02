@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,13 +33,21 @@ export const PaymentVerification = ({
   const [paymentNotes, setPaymentNotes] = useState("");
   
   // Fetch payment QR code on component mount
+  useEffect(() => {
+    if (isOpen && registrationId) {
+      fetchPaymentQr();
+    }
+  }, [isOpen, registrationId]);
+  
   const fetchPaymentQr = async () => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("event_registrations")
         .select("payment_qr_code")
         .eq("id", registrationId)
         .single();
+      
+      if (error) throw error;
       
       if (data?.payment_qr_code) {
         setQrCode(data.payment_qr_code);
@@ -57,16 +65,6 @@ export const PaymentVerification = ({
     setIsUploading(true);
     
     try {
-      // Create storage bucket if it doesn't exist
-      const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('payment-qr-codes');
-      
-      if (bucketError && bucketError.message.includes('not found')) {
-        await supabase.storage.createBucket('payment-qr-codes', {
-          public: true,
-          fileSizeLimit: 1024 * 1024 * 2, // 2MB
-        });
-      }
-      
       // Upload QR code image
       const filePath = `${registrationId}/${file.name}`;
       const { data, error } = await supabase.storage
@@ -111,16 +109,6 @@ export const PaymentVerification = ({
     setIsUploading(true);
     
     try {
-      // Create storage bucket if it doesn't exist
-      const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('payment-proofs');
-      
-      if (bucketError && bucketError.message.includes('not found')) {
-        await supabase.storage.createBucket('payment-proofs', {
-          public: false,
-          fileSizeLimit: 1024 * 1024 * 10, // 10MB
-        });
-      }
-      
       // Upload payment proof
       const filePath = `${registrationId}/${file.name}`;
       const { data, error } = await supabase.storage
@@ -203,16 +191,23 @@ export const PaymentVerification = ({
         .eq("id", registrationId);
       
       // Trigger confirmation email via edge function
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user) {
+      const { data: registration } = await supabase
+        .from("event_registrations")
+        .select("attendee_email, attendee_name")
+        .eq("id", registrationId)
+        .single();
+      
+      if (registration) {
         await supabase.functions.invoke('send-event-confirmation', {
           body: {
-            userEmail: userData.user.email,
+            userEmail: registration.attendee_email || (await supabase.auth.getUser()).data.user?.email,
             eventTitle: event.title,
             eventDate: new Date(event.date).toLocaleDateString(),
             eventTime: event.time,
             eventLocation: event.location,
             googleMeetLink: event.google_meet_link,
+            registrationId: registrationId,
+            attendeeName: registration.attendee_name,
           },
         });
       }
