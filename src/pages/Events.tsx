@@ -14,7 +14,9 @@ import { EventForm } from "@/components/events/EventForm";
 import { EventDetails } from "@/components/events/EventDetails";
 import { EventList } from "@/components/events/EventList";
 import { PaymentModal } from "@/components/events/PaymentModal";
-import type { Event, EventFilters } from "@/types/events";
+import { PaymentVerification } from "@/components/events/PaymentVerification";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+import type { Event, EventFilters, RegistrationFormData, EventRegistration } from "@/types/events";
 
 const categories = [
   { value: "all", label: "All Events" },
@@ -26,31 +28,18 @@ const categories = [
 
 const Events = () => {
   const { toast } = useToast();
+  const { isAdmin } = useIsAdmin();
+  
   const [filters, setFilters] = useState<EventFilters>({
     category: "all",
     searchQuery: "",
   });
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [showEventForm, setShowEventForm] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPaymentVerification, setShowPaymentVerification] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-
-  const checkAdminStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase
-        .from("admin_users")
-        .select()
-        .eq("user_id", user.id)
-        .maybeSingle();
-      setIsAdmin(!!data);
-    }
-  };
-
-  useEffect(() => {
-    checkAdminStatus();
-  }, []);
+  const [currentRegistration, setCurrentRegistration] = useState<EventRegistration | null>(null);
 
   const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ["events", filters],
@@ -79,7 +68,28 @@ const Events = () => {
     },
   });
 
-  const handleRegister = async (event: Event) => {
+  // Fetch user registrations
+  const { data: userRegistrations = [], refetch: refetchRegistrations } = useQuery({
+    queryKey: ["userRegistrations"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from("event_registrations")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error("Error fetching registrations:", error);
+        throw error;
+      }
+
+      return data as EventRegistration[];
+    },
+  });
+
+  const handleRegister = async (event: Event, formData?: RegistrationFormData) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -91,28 +101,38 @@ const Events = () => {
         return;
       }
 
-      const { error } = await supabase.from("event_registrations").insert({
+      // Check if user is already registered
+      const existingRegistration = userRegistrations.find(reg => reg.event_id === event.id);
+      
+      if (existingRegistration) {
+        setCurrentRegistration(existingRegistration);
+        setSelectedEvent(event);
+        setShowPaymentVerification(true);
+        return;
+      }
+
+      // Create new registration
+      const { data: registration, error } = await supabase.from("event_registrations").insert({
         event_id: event.id,
         user_id: user.id,
         payment_status: "pending",
-      });
+        attendee_name: formData?.name,
+        attendee_email: formData?.email,
+        attendee_phone: formData?.phone,
+      }).select().single();
 
       if (error) throw error;
 
-      console.log("Sending confirmation email to:", user.email);
-      
-      const response = await supabase.functions.invoke('create-payment-intent', {
-        body: {
-          amount: event.price,
-          eventId: event.id,
-          userId: user.id,
-        },
+      toast({
+        title: "Registration initiated",
+        description: "Your registration has been started. Please proceed with payment verification.",
       });
-
-      if (response.error) throw response.error;
-
-      setClientSecret(response.data.clientSecret);
-      setShowPaymentModal(true);
+      
+      setCurrentRegistration(registration);
+      setSelectedEvent(event);
+      setShowPaymentVerification(true);
+      refetchRegistrations();
+      
     } catch (error) {
       console.error("Registration error:", error);
       toast({
@@ -125,26 +145,20 @@ const Events = () => {
 
   const handlePaymentSuccess = async () => {
     try {
-      console.log("Sending confirmation email...");
+      console.log("Payment successful, sending confirmation email...");
       
+      if (!selectedEvent) return;
+
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || !selectedEvent) return;
+      if (!user) return;
 
-      const response = await supabase.functions.invoke('send-event-confirmation', {
-        body: {
-          userEmail: user.email,
-          eventTitle: selectedEvent.title,
-          eventDate: format(new Date(selectedEvent.date), "MMMM d, yyyy"),
-          eventTime: selectedEvent.time,
-          eventLocation: selectedEvent.location,
-          googleMeetLink: selectedEvent.google_meet_link,
-        },
+      await refetchRegistrations();
+      
+      toast({
+        title: "Registration complete!",
+        description: "Your payment was successful. You'll receive a confirmation email shortly.",
       });
-
-      if (!response.data) {
-        throw new Error("Failed to send confirmation email");
-      }
-
+      
       setShowPaymentModal(false);
       setSelectedEvent(null);
       refetch();
@@ -156,6 +170,11 @@ const Events = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handlePaymentVerificationComplete = async () => {
+    await refetchRegistrations();
+    refetch();
   };
 
   const handleDeleteEvent = async (eventId: string) => {
@@ -180,6 +199,11 @@ const Events = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const getRegistrationStatus = (eventId: string) => {
+    const registration = userRegistrations.find(reg => reg.event_id === eventId);
+    return registration?.payment_status || null;
   };
 
   return (
@@ -282,6 +306,7 @@ const Events = () => {
               setShowEventForm(true);
             }}
             onDelete={handleDeleteEvent}
+            getRegistrationStatus={getRegistrationStatus}
           />
         )}
 
@@ -292,6 +317,17 @@ const Events = () => {
             onClose={() => setShowPaymentModal(false)}
             onSuccess={handlePaymentSuccess}
             clientSecret={clientSecret}
+          />
+        )}
+        
+        {/* Payment Verification Modal */}
+        {selectedEvent && currentRegistration && (
+          <PaymentVerification
+            isOpen={showPaymentVerification}
+            onClose={() => setShowPaymentVerification(false)}
+            event={selectedEvent}
+            registrationId={currentRegistration.id}
+            onSuccess={handlePaymentVerificationComplete}
           />
         )}
       </div>

@@ -1,19 +1,43 @@
 
+import { useState } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import type { Event } from "@/types/events";
+
+const registrationSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  phone: z.string().min(10, { message: "Please enter a valid phone number." }),
+});
+
+type RegistrationFormValues = z.infer<typeof registrationSchema>;
 
 interface EventDetailsProps {
   event: Event;
-  onRegister: (event: Event) => void;
+  onRegister: (event: Event, formData: RegistrationFormValues) => void;
   onClose: () => void;
 }
 
 export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) => {
   const { toast } = useToast();
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+
+  const form = useForm<RegistrationFormValues>({
+    resolver: zodResolver(registrationSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+    },
+  });
 
   // Check if user is authenticated and get registration status
   const { data: registrationStatus, isLoading } = useQuery({
@@ -45,6 +69,10 @@ export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) 
     }
   });
 
+  const handleSubmitRegistration = (values: RegistrationFormValues) => {
+    onRegister(event, values);
+  };
+
   if (isLoading) {
     return <div className="text-center">Loading...</div>;
   }
@@ -61,11 +89,66 @@ export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) 
     );
   }
 
+  // Show registration form if not yet registered
+  if (!registrationStatus.isRegistered && showRegistrationForm) {
+    return (
+      <div className="space-y-4">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmitRegistration)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your full name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your email" type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your phone number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowRegistrationForm(false)}>Cancel</Button>
+              <Button type="submit">Register</Button>
+            </div>
+          </form>
+        </Form>
+      </div>
+    );
+  }
+
   // Only show basic details if user is not registered
   if (!registrationStatus.isRegistered) {
     return (
       <div className="space-y-4">
-        <p className="text-gray-600">Register to see full event details.</p>
+        <p className="text-gray-600">{event.description}</p>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <h4 className="font-semibold">Date & Time</h4>
@@ -82,7 +165,7 @@ export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) 
         </div>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>Close</Button>
-          <Button onClick={() => onRegister(event)}>Register Now</Button>
+          <Button onClick={() => setShowRegistrationForm(true)}>Start Registration</Button>
         </div>
       </div>
     );

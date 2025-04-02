@@ -17,6 +17,8 @@ interface EventConfirmationRequest {
   eventTime: string;
   eventLocation: string;
   googleMeetLink?: string;
+  registrationId?: string;
+  attendeeName?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -32,6 +34,8 @@ const handler = async (req: Request): Promise<Response> => {
       eventTime,
       eventLocation,
       googleMeetLink,
+      registrationId,
+      attendeeName,
     }: EventConfirmationRequest = await req.json();
 
     console.log("Sending confirmation email for event:", eventTitle);
@@ -41,18 +45,30 @@ const handler = async (req: Request): Promise<Response> => {
       ? `<p>Join the meeting using this link: <a href="${googleMeetLink}">${googleMeetLink}</a></p>`
       : "";
 
+    const registrationDetails = registrationId
+      ? `<p>Registration ID: ${registrationId}</p>`
+      : "";
+
+    const attendeeGreeting = attendeeName
+      ? `<p>Dear ${attendeeName},</p>`
+      : `<p>Dear Participant,</p>`;
+
     const emailResponse = await resend.emails.send({
       from: "Events <onboarding@resend.dev>",
       to: [userEmail],
       subject: `Registration Confirmed: ${eventTitle}`,
       html: `
         <h1>Your registration is confirmed!</h1>
+        ${attendeeGreeting}
         <h2>${eventTitle}</h2>
         <p>Date: ${eventDate}</p>
         <p>Time: ${eventTime}</p>
         <p>Location: ${eventLocation}</p>
         ${meetingDetails}
-        <p>Thank you for registering! We look forward to seeing you at the event.</p>
+        ${registrationDetails}
+        <p>Thank you for registering! Your payment has been verified and your spot is secured.</p>
+        <p>We look forward to seeing you at the event.</p>
+        <p>Best regards,<br/>The Events Team</p>
       `,
     });
 

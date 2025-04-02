@@ -1,77 +1,123 @@
 
 import { format } from "date-fns";
-import { Calendar, Clock, MapPin, Edit, Trash } from "lucide-react";
+import { Edit, Trash2, ExternalLink, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Event } from "@/types/events";
 
 interface EventListProps {
   events: Event[];
   isAdmin: boolean;
   onViewDetails: (event: Event) => void;
-  onEdit: (event: Event) => void;
-  onDelete: (eventId: string) => void;  // Changed this line to expect string
+  onEdit?: (event: Event) => void;
+  onDelete?: (eventId: string) => void;
+  getRegistrationStatus?: (eventId: string) => string | null;
 }
 
-export const EventList = ({ events, isAdmin, onViewDetails, onEdit, onDelete }: EventListProps) => {
+export const EventList = ({ 
+  events, 
+  isAdmin, 
+  onViewDetails, 
+  onEdit, 
+  onDelete,
+  getRegistrationStatus 
+}: EventListProps) => {
+  const renderRegistrationStatus = (eventId: string) => {
+    if (!getRegistrationStatus) return null;
+    
+    const status = getRegistrationStatus(eventId);
+    if (!status) return null;
+    
+    let badgeVariant = "outline";
+    let badgeText = "Pending";
+    
+    switch (status) {
+      case "pending":
+        badgeVariant = "outline";
+        badgeText = "Registration Pending";
+        break;
+      case "pending_verification":
+        badgeVariant = "secondary";
+        badgeText = "Payment Verification Pending";
+        break;
+      case "approved":
+        badgeVariant = "default";
+        badgeText = "Registered";
+        break;
+      case "rejected":
+        badgeVariant = "destructive";
+        badgeText = "Payment Rejected";
+        break;
+    }
+    
+    return (
+      <Badge variant={badgeVariant as any} className="ml-2">
+        {badgeText}
+      </Badge>
+    );
+  };
+  
+  if (events.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-muted-foreground">No events found. Please try a different search or category.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {events.map((event) => (
-        <div
-          key={event.id}
-          className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div className="flex justify-between items-start mb-4">
-            <h2 className="text-2xl font-bold">{event.title}</h2>
-            {isAdmin && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onEdit(event)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => onDelete(event.id)}
-                >
-                  <Trash className="h-4 w-4" />
-                </Button>
+        <Card key={event.id} className="overflow-hidden flex flex-col">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <Badge variant="outline" className="mr-2">
+                {event.category.replace("_", " ")}
+              </Badge>
+              {renderRegistrationStatus(event.id)}
+            </div>
+            <CardTitle className="text-xl mt-2">{event.title}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex-grow">
+            <div className="space-y-2">
+              <div className="flex items-start">
+                <Calendar className="w-4 h-4 mr-2 mt-0.5" />
+                <span>
+                  {format(new Date(event.date), "MMMM d, yyyy")} • {event.time}
+                </span>
               </div>
-            )}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div className="flex items-center text-gray-600">
-              <Calendar className="w-5 h-5 mr-2 text-secondary" />
-              {format(new Date(event.date), "MMMM d, yyyy")}
+              <div className="flex items-start">
+                <ExternalLink className="w-4 h-4 mr-2 mt-0.5" />
+                <span>{event.location}</span>
+              </div>
+              <p className="mt-2 text-muted-foreground line-clamp-2">
+                {event.description}
+              </p>
             </div>
-            <div className="flex items-center text-gray-600">
-              <Clock className="w-5 h-5 mr-2 text-secondary" />
-              {event.time}
+          </CardContent>
+          <CardFooter className="flex justify-between pt-3 border-t">
+            <div>
+              <span className="font-semibold">${event.price.toFixed(2)}</span>
             </div>
-            <div className="flex items-center text-gray-600">
-              <MapPin className="w-5 h-5 mr-2 text-secondary" />
-              {event.location}
-            </div>
-          </div>
-          <p className="text-gray-600 mb-4">{event.description}</p>
-          <div className="flex justify-between items-center">
-            <span className="text-lg font-semibold">
-              ${event.price.toFixed(2)}
-            </span>
-            <div className="space-x-2">
-              <Button variant="outline" onClick={() => onViewDetails(event)}>
+            <div className="flex space-x-2">
+              {isAdmin && (
+                <>
+                  <Button variant="outline" size="sm" onClick={() => onEdit?.(event)}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => onDelete?.(event.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+              <Button onClick={() => onViewDetails(event)}>
                 View Details
               </Button>
-              <Button onClick={() => onViewDetails(event)}>
-                Register Now
-              </Button>
             </div>
-          </div>
-        </div>
+          </CardFooter>
+        </Card>
       ))}
     </div>
   );
 };
-
