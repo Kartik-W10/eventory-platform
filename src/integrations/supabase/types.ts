@@ -144,6 +144,7 @@ export type Database = {
           google_meet_link: string | null
           id: string
           location: string
+          payment_qr_code: string | null
           price: number
           registration_deadline: string | null
           time: string
@@ -158,6 +159,7 @@ export type Database = {
           google_meet_link?: string | null
           id?: string
           location: string
+          payment_qr_code?: string | null
           price?: number
           registration_deadline?: string | null
           time: string
@@ -172,6 +174,7 @@ export type Database = {
           google_meet_link?: string | null
           id?: string
           location?: string
+          payment_qr_code?: string | null
           price?: number
           registration_deadline?: string | null
           time?: string

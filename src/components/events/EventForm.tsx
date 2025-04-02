@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { QrCode } from "lucide-react";
 import type { Event } from "@/types/events";
 
 const categories = [
@@ -23,6 +25,9 @@ interface EventFormProps {
 
 export const EventForm = ({ onSuccess, onCancel }: EventFormProps) => {
   const { toast } = useToast();
+  const [isUploading, setIsUploading] = useState(false);
+  const [qrCodePreview, setQrCodePreview] = useState<string | null>(null);
+  
   const eventForm = useForm({
     defaultValues: {
       title: "",
@@ -35,8 +40,53 @@ export const EventForm = ({ onSuccess, onCancel }: EventFormProps) => {
       price: 0,
       registration_deadline: "",
       google_meet_link: "",
+      payment_qr_code: "",
     },
   });
+
+  const handleQrCodeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsUploading(true);
+    
+    try {
+      // Create a unique file path
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+      
+      // Upload the file to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('event-qr-codes')
+        .upload(filePath, file, { upsert: true });
+      
+      if (error) throw error;
+      
+      // Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('event-qr-codes')
+        .getPublicUrl(filePath);
+      
+      // Set the QR code URL in the form
+      eventForm.setValue('payment_qr_code', urlData.publicUrl);
+      setQrCodePreview(urlData.publicUrl);
+      
+      toast({
+        title: "QR code uploaded",
+        description: "Your payment QR code has been uploaded successfully.",
+      });
+    } catch (error) {
+      console.error("Error uploading QR code:", error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload QR code. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSubmitEvent = async (data: any) => {
     try {
@@ -201,6 +251,53 @@ export const EventForm = ({ onSuccess, onCancel }: EventFormProps) => {
               </FormItem>
             )}
           />
+          <FormField
+            control={eventForm.control}
+            name="payment_qr_code"
+            render={({ field }) => (
+              <FormItem className="col-span-2">
+                <FormLabel className="flex items-center gap-2">
+                  <QrCode className="h-4 w-4" />
+                  Payment QR Code (Optional)
+                </FormLabel>
+                <div className="space-y-2">
+                  <Input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleQrCodeUpload}
+                    disabled={isUploading}
+                    className="hidden"
+                    id="qr-upload"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => document.getElementById('qr-upload')?.click()}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? "Uploading..." : "Upload QR Code"}
+                    </Button>
+                    <Input {...field} type="hidden" />
+                    {field.value && (
+                      <span className="text-sm text-green-600">QR code uploaded successfully!</span>
+                    )}
+                  </div>
+                  {qrCodePreview && (
+                    <div className="mt-2">
+                      <p className="text-sm text-muted-foreground mb-1">Preview:</p>
+                      <img 
+                        src={qrCodePreview} 
+                        alt="Payment QR Code Preview" 
+                        className="max-w-[150px] h-auto border rounded"
+                      />
+                    </div>
+                  )}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
@@ -210,4 +307,3 @@ export const EventForm = ({ onSuccess, onCancel }: EventFormProps) => {
     </Form>
   );
 };
-

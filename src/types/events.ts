@@ -10,6 +10,7 @@ export type Event = {
   capacity: number;
   price: number;
   google_meet_link?: string;
+  payment_qr_code?: string;
 };
 
 export type EventFilters = {

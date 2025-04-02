@@ -35,9 +35,15 @@ export const PaymentVerification = ({
   // Fetch payment QR code on component mount
   useEffect(() => {
     if (isOpen && registrationId) {
-      fetchPaymentQr();
+      // First try to get QR code from the event
+      if (event.payment_qr_code) {
+        setQrCode(event.payment_qr_code);
+      } else {
+        // Fallback to registration-specific QR code
+        fetchPaymentQr();
+      }
     }
-  }, [isOpen, registrationId]);
+  }, [isOpen, registrationId, event]);
   
   const fetchPaymentQr = async () => {
     try {
@@ -290,6 +296,11 @@ export const PaymentVerification = ({
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Upload Payment QR Code</label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {event.payment_qr_code ? 
+                    "This event already has a payment QR code, but you can upload a registration-specific one if needed." : 
+                    "Upload a QR code for this registration. You can also set a default QR code when creating events."}
+                </p>
                 <Input 
                   type="file" 
                   accept="image/*" 
