@@ -36,6 +36,7 @@ const SidebarMenuComponent = () => {
   const [publicationsOpen, setPublicationsOpen] = useState(false);
   const { toggleSidebar, state } = useSidebar();
 
+  // Update sidebar menu order - put Menu above Projects
   return (
     <Sidebar side="left" variant="sidebar" collapsible="icon">
       <SidebarRail />
@@ -56,6 +57,7 @@ const SidebarMenuComponent = () => {
           <SidebarGroupLabel className="text-white/70">Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              {/* Menu first */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Downloads"
@@ -92,6 +94,7 @@ const SidebarMenuComponent = () => {
                 )}
               </SidebarMenuItem>
 
+              {/* Projects second */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Projects"

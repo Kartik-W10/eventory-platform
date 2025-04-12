@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Session } from "@supabase/supabase-js";
+import { useSidebar } from "@/components/ui/sidebar/sidebar-context";
 
 interface NavbarProps {
   session: Session | null;
@@ -17,6 +18,7 @@ const Navbar = ({ session }: NavbarProps) => {
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { state } = useSidebar();
 
   useEffect(() => {
     setUser(session?.user ?? null);
@@ -60,10 +62,16 @@ const Navbar = ({ session }: NavbarProps) => {
   };
 
   return (
-    <nav className={`sticky top-0 z-50 bg-white ${scrolled ? "shadow-md" : "shadow-sm"} transition-shadow duration-300`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav 
+      className={`sticky top-0 z-40 bg-white transition-all duration-300 ${scrolled ? "shadow-md" : "shadow-sm"}`}
+      style={{
+        width: "100%",
+        marginLeft: 0
+      }}
+    >
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 md:ml-0">
             <SidebarTrigger className="md:hidden" />
             <Link to="/" className="text-xl font-bold text-primary flex items-center">
               YourBrand

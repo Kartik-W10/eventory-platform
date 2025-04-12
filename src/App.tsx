@@ -46,10 +46,12 @@ function App() {
       <SidebarProvider>
         <Router>
           <div className="flex min-h-screen flex-col">
-            <Navbar session={session} />
-            <div className="flex-1 flex">
+            <div className="flex-none">
+              <Navbar session={session} />
+            </div>
+            <div className="flex-1 flex flex-row">
               <SidebarMenu />
-              <main className="flex-1">
+              <main className="flex-1 overflow-x-hidden">
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
