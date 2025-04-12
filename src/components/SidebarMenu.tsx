@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Briefcase,
   GraduationCap,
@@ -31,12 +31,18 @@ import {
 import { useSidebar } from "@/components/ui/sidebar/sidebar-context";
 
 const SidebarMenuComponent = () => {
-  const [projectsOpen, setProjectsOpen] = useState(false);
-  const [downloadsOpen, setDownloadsOpen] = useState(true); // Open by default on downloads page
-  const [publicationsOpen, setPublicationsOpen] = useState(false);
+  const location = useLocation();
+  const [downloadsOpen, setDownloadsOpen] = useState(
+    location.pathname.includes('/downloads')
+  );
+  const [projectsOpen, setProjectsOpen] = useState(
+    location.pathname.includes('/projects')
+  );
+  const [publicationsOpen, setPublicationsOpen] = useState(
+    location.pathname.includes('/publications')
+  );
   const { toggleSidebar, state } = useSidebar();
 
-  // Update sidebar menu order - put Menu above Projects
   return (
     <Sidebar side="left" variant="sidebar" collapsible="icon">
       <SidebarRail />
@@ -57,12 +63,13 @@ const SidebarMenuComponent = () => {
           <SidebarGroupLabel className="text-white/70">Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {/* Menu first */}
+              {/* Downloads menu */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Downloads"
                   onClick={() => setDownloadsOpen(!downloadsOpen)}
                   className="text-white hover:bg-white/10"
+                  isActive={location.pathname.includes('/downloads')}
                 >
                   <Download className="h-4 w-4" />
                   <span>Downloads</span>
@@ -75,7 +82,11 @@ const SidebarMenuComponent = () => {
                 {downloadsOpen && (
                   <SidebarMenuSub className="animate-accordion-down">
                     <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild className="hover:bg-white/10">
+                      <SidebarMenuSubButton 
+                        asChild 
+                        className="hover:bg-white/10"
+                        isActive={location.pathname === "/downloads/code"}
+                      >
                         <Link to="/downloads/code" className="text-white/90 hover:text-white">
                           <Code className="h-4 w-4" />
                           <span>Code</span>
@@ -83,7 +94,11 @@ const SidebarMenuComponent = () => {
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild className="hover:bg-white/10">
+                      <SidebarMenuSubButton 
+                        asChild 
+                        className="hover:bg-white/10"
+                        isActive={location.pathname === "/downloads/resources"}
+                      >
                         <Link to="/downloads/resources" className="text-white/90 hover:text-white">
                           <FileStack className="h-4 w-4" />
                           <span>Resources</span>
@@ -94,12 +109,13 @@ const SidebarMenuComponent = () => {
                 )}
               </SidebarMenuItem>
 
-              {/* Projects second */}
+              {/* Projects menu */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Projects"
                   onClick={() => setProjectsOpen(!projectsOpen)}
                   className="text-white hover:bg-white/10"
+                  isActive={location.pathname.includes('/projects')}
                 >
                   <Briefcase className="h-4 w-4" />
                   <span>Projects</span>
@@ -112,7 +128,11 @@ const SidebarMenuComponent = () => {
                 {projectsOpen && (
                   <SidebarMenuSub className="animate-accordion-down">
                     <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild className="hover:bg-white/10">
+                      <SidebarMenuSubButton 
+                        asChild 
+                        className="hover:bg-white/10"
+                        isActive={location.pathname === "/projects/industrial"}
+                      >
                         <Link to="/projects/industrial" className="text-white/90 hover:text-white">
                           <Briefcase className="h-4 w-4" />
                           <span>Industrial</span>
@@ -120,7 +140,11 @@ const SidebarMenuComponent = () => {
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild className="hover:bg-white/10">
+                      <SidebarMenuSubButton 
+                        asChild 
+                        className="hover:bg-white/10"
+                        isActive={location.pathname === "/projects/academic"}
+                      >
                         <Link to="/projects/academic" className="text-white/90 hover:text-white">
                           <GraduationCap className="h-4 w-4" />
                           <span>Academic</span>
@@ -131,11 +155,13 @@ const SidebarMenuComponent = () => {
                 )}
               </SidebarMenuItem>
 
+              {/* Publications menu */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Publications"
                   onClick={() => setPublicationsOpen(!publicationsOpen)}
                   className="text-white hover:bg-white/10"
+                  isActive={location.pathname.includes('/publications')}
                 >
                   <FileText className="h-4 w-4" />
                   <span>Publications</span>
@@ -148,7 +174,11 @@ const SidebarMenuComponent = () => {
                 {publicationsOpen && (
                   <SidebarMenuSub className="animate-accordion-down">
                     <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild className="hover:bg-white/10">
+                      <SidebarMenuSubButton 
+                        asChild 
+                        className="hover:bg-white/10"
+                        isActive={location.pathname === "/publications/newspaper"}
+                      >
                         <Link to="/publications/newspaper" className="text-white/90 hover:text-white">
                           <Newspaper className="h-4 w-4" />
                           <span>Newspaper/Magazine</span>
@@ -156,7 +186,11 @@ const SidebarMenuComponent = () => {
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild className="hover:bg-white/10">
+                      <SidebarMenuSubButton 
+                        asChild 
+                        className="hover:bg-white/10"
+                        isActive={location.pathname === "/publications/research"}
+                      >
                         <Link to="/publications/research" className="text-white/90 hover:text-white">
                           <FileText className="h-4 w-4" />
                           <span>Research Articles</span>

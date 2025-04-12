@@ -17,6 +17,14 @@ import Auth from "@/pages/Auth";
 import MeetingBooking from "@/pages/MeetingBooking";
 import CodePage from "@/pages/downloads/Code";
 import ResourcesPage from "@/pages/downloads/Resources";
+
+// New page imports
+import NewspaperPage from "@/pages/publications/Newspaper";
+import ResearchPage from "@/pages/publications/Research";
+import IndustrialPage from "@/pages/projects/Industrial";
+import AcademicPage from "@/pages/projects/Academic";
+import ArticleDetail from "@/pages/ArticleDetail";
+
 import { supabase } from "@/integrations/supabase/client";
 import "./App.css";
 
@@ -62,6 +70,16 @@ function App() {
                   <Route path="/meeting-booking" element={<MeetingBooking />} />
                   <Route path="/downloads/code" element={<CodePage />} />
                   <Route path="/downloads/resources" element={<ResourcesPage />} />
+                  
+                  {/* New routes for publications and projects */}
+                  <Route path="/publications/newspaper" element={<NewspaperPage />} />
+                  <Route path="/publications/research" element={<ResearchPage />} />
+                  <Route path="/projects/industrial" element={<IndustrialPage />} />
+                  <Route path="/projects/academic" element={<AcademicPage />} />
+                  
+                  {/* Article detail route */}
+                  <Route path="/:category/:slug" element={<ArticleDetail />} />
+                  
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
