@@ -46,7 +46,7 @@ const SidebarMenuComponent = () => {
             onClick={toggleSidebar}
             aria-label="Toggle menu"
           />
-          <span className={`ml-2 text-xl font-bold text-sidebar-foreground transition-opacity duration-300 ${state === "collapsed" ? "opacity-0" : "opacity-100"}`}>
+          <span className={`ml-2 text-xl font-bold text-primary-foreground transition-opacity duration-300 ${state === "collapsed" ? "opacity-0" : "opacity-100"}`}>
             YourBrand
           </span>
         </div>

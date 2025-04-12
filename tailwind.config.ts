@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -28,6 +29,14 @@ export default {
           foreground: "#1a365d",
         },
         background: "#f7fafc",
+        sidebar: {
+          DEFAULT: "#1a365d", // Same as primary for consistency
+          foreground: "#ffffff",
+          border: "rgba(255,255,255,0.1)",
+          accent: "rgba(255,255,255,0.1)",
+          "accent-foreground": "#ffffff",
+          ring: "rgba(255,255,255,0.2)",
+        }
       },
       fontFamily: {
         sans: ["Inter", "sans-serif"],
