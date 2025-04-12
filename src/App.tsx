@@ -49,7 +49,7 @@ function App() {
             <div className="flex-none">
               <Navbar session={session} />
             </div>
-            <div className="flex-1 flex flex-row">
+            <div className="flex-1 flex flex-row pt-16 md:pt-0">
               <SidebarMenu />
               <main className="flex-1 overflow-x-hidden">
                 <Routes>

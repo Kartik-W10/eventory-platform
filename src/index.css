@@ -67,6 +67,24 @@
   transition: margin-left 0.3s ease;
 }
 
+/* Fix for z-index stacking and sidebar-navbar interaction */
+nav {
+  position: sticky;
+  top: 0;
+  width: 100%;
+}
+
+main {
+  padding-top: 0;
+  margin-top: 0;
+}
+
+@media (max-width: 768px) {
+  main {
+    padding-top: 0.5rem;
+  }
+}
+
 @media (min-width: 768px) {
   body {
     overflow-x: hidden;

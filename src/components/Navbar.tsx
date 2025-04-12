@@ -63,11 +63,7 @@ const Navbar = ({ session }: NavbarProps) => {
 
   return (
     <nav 
-      className={`sticky top-0 z-40 bg-white transition-all duration-300 ${scrolled ? "shadow-md" : "shadow-sm"}`}
-      style={{
-        width: "100%",
-        marginLeft: 0
-      }}
+      className={`sticky top-0 z-10 bg-white transition-all duration-300 ${scrolled ? "shadow-md" : "shadow-sm"}`}
     >
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
