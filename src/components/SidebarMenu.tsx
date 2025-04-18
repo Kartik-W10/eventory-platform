@@ -17,7 +17,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarRail,
+  SidebarMenuSub,
 } from "@/components/ui/sidebar";
 
 import { Header } from "./sidebar/Header";
@@ -37,7 +37,6 @@ const SidebarMenuComponent = () => {
 
   return (
     <Sidebar side="left" variant="sidebar" collapsible="icon">
-      <SidebarRail />
       <Header />
       <SidebarContent>
         <SidebarGroup>
