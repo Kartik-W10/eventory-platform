@@ -1,5 +1,4 @@
-
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -58,6 +57,14 @@ const Footer = () => {
               <li>
                 <Link to="/contact" className="hover:text-secondary transition-colors inline-block">
                   Contact
+                </Link>
+              </li>
+              <li>
+                <Link to="/meeting-booking" className="hover:text-secondary transition-colors inline-block">
+                  <span className="flex items-center">
+                    <Video className="w-4 h-4 mr-2" />
+                    Book a Meeting
+                  </span>
                 </Link>
               </li>
             </ul>

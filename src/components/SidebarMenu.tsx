@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Briefcase,
@@ -12,6 +11,7 @@ import {
   ChevronDown,
   ChevronRight,
   Menu,
+  Video, // Add this import
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,6 +40,9 @@ const SidebarMenuComponent = () => {
   );
   const [publicationsOpen, setPublicationsOpen] = useState(
     location.pathname.includes('/publications')
+  );
+  const [meetingOpen, setMeetingOpen] = useState(
+    location.pathname.includes('/meeting')
   );
   const { toggleSidebar, state } = useSidebar();
 
@@ -199,6 +202,21 @@ const SidebarMenuComponent = () => {
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>
                 )}
+              </SidebarMenuItem>
+              
+              {/* New Meeting menu item */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Book a Meeting"
+                  className="text-white hover:bg-white/10"
+                  isActive={location.pathname === "/meeting-booking"}
+                  asChild
+                >
+                  <Link to="/meeting-booking">
+                    <Video className="h-4 w-4" />
+                    <span>Book a Meeting</span>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
