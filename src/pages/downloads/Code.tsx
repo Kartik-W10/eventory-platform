@@ -3,78 +3,26 @@ import { useState, useEffect } from "react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import CodeLinkForm from "@/components/downloads/CodeLinkForm";
-import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import CodeLinksList from "@/components/downloads/CodeLinksList";
 import { useToast } from "@/hooks/use-toast";
 
-interface CodeLink {
-  id: string;
-  title: string;
-  description: string | null;
-  url: string;
-  category: string;
-  created_at: string;
-}
-
 const CodePage = () => {
-  const { isAdmin } = useIsAdmin();
+  const { isAdmin, isLoading: isAdminLoading } = useIsAdmin();
   const { toast } = useToast();
-  const [links, setLinks] = useState<CodeLink[]>([]);
-  const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const fetchLinks = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("code_links")
-        .select("*")
-        .eq("category", "code")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setLinks(data || []);
-    } catch (error: any) {
-      console.error("Error fetching links:", error);
-      toast({
-        title: "Error fetching links",
-        description: error.message || "An error occurred while fetching links.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      const { error } = await supabase.from("code_links").delete().eq("id", id);
-      if (error) throw error;
-      
-      // Update local state
-      setLinks(links.filter(link => link.id !== id));
-      
-      toast({
-        title: "Link deleted",
-        description: "The link has been removed.",
-      });
-    } catch (error: any) {
-      console.error("Error deleting link:", error);
-      toast({
-        title: "Error deleting link",
-        description: error.message || "An error occurred while deleting the link.",
-        variant: "destructive",
-      });
-    }
-  };
+  // Log admin status for debugging
+  useEffect(() => {
+    console.log("Admin status in Code page:", isAdmin);
+  }, [isAdmin]);
 
   const handleLinkAdded = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
-  useEffect(() => {
-    fetchLinks();
-  }, [refreshTrigger]);
+  if (isAdminLoading) {
+    return <p className="text-center py-8">Loading...</p>;
+  }
 
   return (
     <div className="container py-8 space-y-8">
@@ -85,56 +33,21 @@ const CodePage = () => {
         </p>
       </div>
 
-      {isAdmin && (
+      {isAdmin ? (
         <div className="mb-8">
           <CodeLinkForm category="code" onSuccess={handleLinkAdded} />
         </div>
+      ) : (
+        <div className="mb-8 p-4 border rounded-md bg-yellow-50 text-yellow-800">
+          <p>You need admin privileges to add code links.</p>
+        </div>
       )}
 
-      <div className="space-y-6">
-        {loading && links.length === 0 ? (
-          <p className="text-center py-4">Loading links...</p>
-        ) : links.length === 0 ? (
-          <p className="text-center py-4 text-muted-foreground">
-            No code links available yet.
-          </p>
-        ) : (
-          <div className="space-y-4 max-w-5xl">
-            {links.map((link) => (
-              <div key={link.id} className="p-4 border rounded-lg bg-card hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="space-y-1 flex-1">
-                    <h3 className="text-lg font-medium">{link.title}</h3>
-                    {link.description && (
-                      <p className="text-muted-foreground text-sm">{link.description}</p>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(link.url, "_blank")}
-                      className="whitespace-nowrap"
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Codes
-                    </Button>
-                    {isAdmin && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(link.id)}
-                      >
-                        Delete
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <CodeLinksList 
+        category="code" 
+        refreshTrigger={refreshTrigger} 
+        isAdmin={isAdmin} 
+      />
     </div>
   );
 };

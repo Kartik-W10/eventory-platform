@@ -15,9 +15,12 @@ export const useIsAdmin = () => {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
+          console.log("No authenticated user found");
           setIsAdmin(false);
           return;
         }
+        
+        console.log("Checking admin status for user:", user.email);
         
         // Check if user is in admin_users table
         const { data, error } = await supabase
@@ -31,7 +34,9 @@ export const useIsAdmin = () => {
           throw error;
         }
         
-        setIsAdmin(!!data);
+        const hasAdminRole = !!data;
+        console.log("Admin status result:", hasAdminRole ? "Is admin" : "Not admin");
+        setIsAdmin(hasAdminRole);
       } catch (error) {
         console.error("Error checking admin status:", error);
         setIsAdmin(false);

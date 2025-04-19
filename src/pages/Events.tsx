@@ -27,7 +27,12 @@ const categories = [
 
 const Events = () => {
   const { toast } = useToast();
-  const { isAdmin } = useIsAdmin();
+  const { isAdmin, isLoading: isAdminLoading } = useIsAdmin();
+  
+  // Log admin status for debugging
+  useEffect(() => {
+    console.log("Admin status in Events page:", isAdmin);
+  }, [isAdmin]);
   
   const [filters, setFilters] = useState<EventFilters>({
     category: "all",
@@ -206,6 +211,14 @@ const Events = () => {
     return registration?.payment_status || null;
   };
 
+  if (isLoading || isAdminLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -216,12 +229,16 @@ const Events = () => {
           </p>
         </div>
 
-        {isAdmin && (
+        {isAdmin ? (
           <div className="mb-8">
             <Button onClick={() => setShowEventForm(true)} className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
               Add New Event
             </Button>
+          </div>
+        ) : (
+          <div className="mb-8 p-4 border rounded-md bg-yellow-50 text-yellow-800">
+            <p>You need admin privileges to add events.</p>
           </div>
         )}
 

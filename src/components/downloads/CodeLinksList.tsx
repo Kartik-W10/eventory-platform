@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +24,11 @@ const CodeLinksList = ({ category, refreshTrigger = 0, isAdmin = false }: CodeLi
   const { toast } = useToast();
   const [links, setLinks] = useState<CodeLink[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Log admin status for debugging
+  useEffect(() => {
+    console.log(`Admin status in CodeLinksList (${category}):`, isAdmin);
+  }, [isAdmin, category]);
 
   const fetchLinks = async () => {
     try {
