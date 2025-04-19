@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +5,8 @@ import { PDFUploadForm } from "@/components/pdf/PDFUploadForm";
 import { PDFGrid } from "@/components/pdf/PDFGrid";
 import { PDFPreviewModal } from "@/components/pdf/PDFPreviewModal";
 import { useToast } from "@/components/ui/use-toast";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { Button } from "@/components/ui/button";
 
 interface PDF {
   id: string;
@@ -20,25 +21,8 @@ interface PDF {
 
 const PDFs = () => {
   const [selectedPDF, setSelectedPDF] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { isAdmin, userId } = useIsAdmin();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: adminData } = await supabase
-          .from("admin_users")
-          .select("user_id")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        
-        setIsAdmin(!!adminData);
-      }
-    };
-
-    checkAdminStatus();
-  }, []);
 
   const { data: pdfs, isLoading, refetch } = useQuery({
     queryKey: ["pdfs"],
@@ -101,6 +85,40 @@ const PDFs = () => {
     }
   };
 
+  const addSelfAsAdmin = async () => {
+    if (!userId) {
+      toast({
+        title: "Error",
+        description: "No user logged in",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("admin_users")
+        .insert({ user_id: userId });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Added as admin successfully. Please refresh the page.",
+      });
+      
+      // Force reload to reflect new admin status
+      window.location.reload();
+    } catch (error) {
+      console.error("Error adding admin:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add as admin",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -112,6 +130,15 @@ const PDFs = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       {isAdmin && <PDFUploadForm onSuccess={refetch} />}
+      
+      {userId && !isAdmin && (
+        <div className="mb-8 p-4 border rounded-md bg-slate-50">
+          <p className="mb-2">Current user ID: <code className="bg-slate-100 p-1 rounded">{userId}</code></p>
+          <p className="mb-4">You're not currently an admin. You can add yourself as admin:</p>
+          <Button onClick={addSelfAsAdmin}>Make myself admin</Button>
+        </div>
+      )}
+      
       <div className="mb-8">
         <h1 className="text-3xl font-bold">PDF Library</h1>
         <p className="text-gray-600 mt-2">Browse and download our collection of PDFs</p>
