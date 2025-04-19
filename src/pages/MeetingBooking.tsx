@@ -62,7 +62,7 @@ const MeetingBooking = () => {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div 
             className="calendly-inline-widget" 
-            data-url="https://calendly.com/kartikwadate65"
+            data-url="https://calendly.com/researchbuddyhq"
             style={{ minWidth: '320px', height: '700px' }} 
           />
         </div>
