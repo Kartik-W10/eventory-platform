@@ -76,6 +76,7 @@ export const SidebarMenuButton = React.forwardRef<
           side="right"
           align="center"
           hidden={state !== "collapsed" || isMobile}
+          className="bg-white text-primary" // Add this line to improve visibility
           {...tooltip}
         />
       </Tooltip>
@@ -83,3 +84,4 @@ export const SidebarMenuButton = React.forwardRef<
   }
 )
 SidebarMenuButton.displayName = "SidebarMenuButton"
+
