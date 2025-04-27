@@ -184,6 +184,29 @@ const Events = () => {
 
   const handleDeleteEvent = async (eventId: string) => {
     try {
+      // First, delete any associated payment records
+      const { error: paymentsError } = await supabase
+        .from("payments")
+        .delete()
+        .eq("event_id", eventId);
+      
+      if (paymentsError) {
+        console.error("Error deleting payment records:", paymentsError);
+        throw paymentsError;
+      }
+      
+      // Then, delete any associated event registrations
+      const { error: registrationsError } = await supabase
+        .from("event_registrations")
+        .delete()
+        .eq("event_id", eventId);
+      
+      if (registrationsError) {
+        console.error("Error deleting event registrations:", registrationsError);
+        throw registrationsError;
+      }
+
+      // Finally, delete the event
       const { error } = await supabase
         .from("events")
         .delete()
