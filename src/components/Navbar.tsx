@@ -1,12 +1,13 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, LogIn, LogOut } from "lucide-react";
+import { Menu, X, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Session } from "@supabase/supabase-js";
 import { useSidebar } from "@/components/ui/sidebar/sidebar-context";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface NavbarProps {
   session: Session | null;
@@ -19,6 +20,7 @@ const Navbar = ({ session }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { state } = useSidebar();
+  const { isAdmin } = useIsAdmin();
 
   useEffect(() => {
     setUser(session?.user ?? null);
@@ -89,6 +91,23 @@ const Navbar = ({ session }: NavbarProps) => {
                 {item.name}
               </Link>
             ))}
+            
+            {isAdmin && (
+              <Link 
+                to="/admin" 
+                className={`py-2 text-sm font-medium transition-colors ${
+                  location.pathname.startsWith("/admin")
+                    ? "text-secondary border-b-2 border-secondary"
+                    : "text-primary hover:text-secondary"
+                }`}
+              >
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <LayoutDashboard className="h-4 w-4" />
+                  Admin
+                </Button>
+              </Link>
+            )}
+            
             {user ? (
               <Button
                 variant="outline"
@@ -140,6 +159,22 @@ const Navbar = ({ session }: NavbarProps) => {
                   {item.name}
                 </Link>
               ))}
+              
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className={`block py-3 px-3 rounded-md text-base font-medium flex items-center ${
+                    location.pathname.startsWith("/admin")
+                      ? "bg-primary/5 text-secondary"
+                      : "text-primary hover:bg-primary/5 hover:text-secondary"
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Admin
+                </Link>
+              )}
+              
               {user ? (
                 <Button
                   variant="outline"

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { SidebarProvider } from "@/components/ui/sidebar/sidebar-context";
@@ -24,6 +24,12 @@ import ResearchPage from "@/pages/publications/Research";
 import IndustrialPage from "@/pages/projects/Industrial";
 import AcademicPage from "@/pages/projects/Academic";
 import ArticleDetail from "@/pages/ArticleDetail";
+
+// Admin page imports
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import PageManager from "@/pages/admin/PageManager";
+import UserApprovals from "@/pages/admin/UserApprovals";
+import AdminSettings from "@/pages/admin/AdminSettings";
 
 import { supabase } from "@/integrations/supabase/client";
 import "./App.css";
@@ -79,6 +85,12 @@ function App() {
                   
                   {/* Article detail route */}
                   <Route path="/:category/:slug" element={<ArticleDetail />} />
+                  
+                  {/* Admin routes */}
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/pages" element={<PageManager />} />
+                  <Route path="/admin/users" element={<UserApprovals />} />
+                  <Route path="/admin/settings" element={<AdminSettings />} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
