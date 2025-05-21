@@ -16,6 +16,7 @@ interface User {
   created_at: string;
   display_name?: string;
   status: 'pending' | 'approved' | 'rejected';
+  user_id?: string; // Add this for compatibility with database
 }
 
 const UserApprovals = () => {
@@ -47,7 +48,17 @@ const UserApprovals = () => {
           throw error;
         }
         
-        setUsers(data || []);
+        // Transform the data to match the User interface
+        const transformedData = data?.map(user => ({
+          id: user.user_id,
+          user_id: user.user_id,
+          email: user.email,
+          display_name: user.display_name,
+          created_at: user.created_at,
+          status: user.status
+        })) || [];
+        
+        setUsers(transformedData);
       } catch (error) {
         console.error("Error fetching users:", error);
         toast({

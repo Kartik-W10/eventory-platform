@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -6,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface UploadFormData {
@@ -17,10 +18,11 @@ interface UploadFormData {
 }
 
 interface PDFUploadFormProps {
-  onSuccess: () => void;
+  onSuccess?: () => void;
+  onUploadComplete?: () => void; // Add this for backward compatibility
 }
 
-export const PDFUploadForm = ({ onSuccess }: PDFUploadFormProps) => {
+export const PDFUploadForm = ({ onSuccess, onUploadComplete }: PDFUploadFormProps) => {
   const { toast } = useToast();
   const form = useForm<UploadFormData>();
 
@@ -76,7 +78,8 @@ export const PDFUploadForm = ({ onSuccess }: PDFUploadFormProps) => {
         description: "PDF uploaded successfully",
       });
       form.reset();
-      onSuccess();
+      if (onSuccess) onSuccess();
+      if (onUploadComplete) onUploadComplete();
     },
     onError: (error) => {
       console.error("Upload error:", error);

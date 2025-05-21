@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { CodeLinkForm } from "@/components/downloads/CodeLinkForm";
-import { CodeLinksList } from "@/components/downloads/CodeLinksList";
+import CodeLinkForm from "@/components/downloads/CodeLinkForm";
+import CodeLinksList from "@/components/downloads/CodeLinksList";
 import { supabase } from "@/integrations/supabase/client";
 import { useApprovalGuard } from "@/hooks/useApprovalGuard";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -94,8 +94,8 @@ const CodePage = () => {
       <h1 className="text-3xl font-bold mb-6">Code Resources</h1>
 
       {session && !isApproved && isPending && hasChecked && (
-        <Alert variant="warning" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
+        <Alert variant="default" className="mb-6 border-yellow-400 bg-yellow-50">
+          <AlertCircle className="h-4 w-4 text-yellow-500" />
           <AlertTitle>Account Pending Approval</AlertTitle>
           <AlertDescription>
             Your account is pending administrator approval. You can browse the code resources, but you cannot access them until your account is approved.
@@ -113,14 +113,13 @@ const CodePage = () => {
         </Alert>
       )}
 
-      {session && <CodeLinkForm onLinkAdded={handleLinkAdded} />}
+      {session && <CodeLinkForm category="code" onSuccess={handleLinkAdded} />}
 
       <div className="mt-8">
         <CodeLinksList 
-          links={links} 
-          loading={loading} 
-          onLinkClick={handleLinkClick}
-          isApproved={isApproved} 
+          category="code"
+          refreshTrigger={refresh}
+          isAdmin={false}
         />
       </div>
     </div>

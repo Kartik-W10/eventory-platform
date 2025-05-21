@@ -97,8 +97,8 @@ const PDFs = () => {
       <h1 className="text-3xl font-bold mb-6">PDF Resources</h1>
 
       {session && !isApproved && isPending && hasChecked && (
-        <Alert variant="warning" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
+        <Alert variant="default" className="mb-6 border-yellow-400 bg-yellow-50">
+          <AlertCircle className="h-4 w-4 text-yellow-500" />
           <AlertTitle>Account Pending Approval</AlertTitle>
           <AlertDescription>
             Your account is pending administrator approval. You can browse the PDFs, but you cannot view them until your account is approved.
@@ -121,13 +121,13 @@ const PDFs = () => {
       <PDFGrid
         pdfs={pdfs}
         isLoading={isLoading}
-        onSelect={handlePdfSelect}
+        onPreview={handlePdfSelect}
         isApproved={isApproved}
       />
 
       {showModal && (
         <PDFPreviewModal
-          pdf={selectedPdf}
+          pdfUrl={selectedPdf?.file_path ? `https://rtwspqivpnjszjvjspbw.supabase.co/storage/v1/object/public/pdf-storage/${selectedPdf.file_path}` : null}
           isOpen={showModal}
           onClose={() => setShowModal(false)}
         />

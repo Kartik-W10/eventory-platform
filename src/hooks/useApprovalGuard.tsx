@@ -11,7 +11,7 @@ interface UseApprovalGuardOptions {
 
 export const useApprovalGuard = (options: UseApprovalGuardOptions = {}) => {
   const [hasChecked, setHasChecked] = useState(false);
-  const { isApproved, isLoading } = useUserStatus();
+  const { isApproved, isLoading, isPending } = useUserStatus();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -35,5 +35,5 @@ export const useApprovalGuard = (options: UseApprovalGuardOptions = {}) => {
     }
   }, [isApproved, isLoading, navigate, redirectTo, showToast, toast]);
 
-  return { isApproved, isLoading, hasChecked };
+  return { isApproved, isLoading, hasChecked, isPending };
 };
