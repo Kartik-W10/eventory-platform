@@ -1,127 +1,137 @@
 
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 import { PDFUploadForm } from "@/components/pdf/PDFUploadForm";
 import { PDFGrid } from "@/components/pdf/PDFGrid";
 import { PDFPreviewModal } from "@/components/pdf/PDFPreviewModal";
-import { useToast } from "@/components/ui/use-toast";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { Button } from "@/components/ui/button";
-
-interface PDF {
-  id: string;
-  title: string;
-  description: string | null;
-  file_path: string;
-  thumbnail_path: string | null;
-  author: string | null;
-  upload_date: string | null;
-  views: number | null;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { useApprovalGuard } from "@/hooks/useApprovalGuard";
+import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const PDFs = () => {
-  const [selectedPDF, setSelectedPDF] = useState<string | null>(null);
-  const { isAdmin, isLoading: isAdminLoading } = useIsAdmin();
+  const [selectedPdf, setSelectedPdf] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [pdfs, setPdfs] = useState([]);
+  const [session, setSession] = useState(null);
+  const { isApproved, isPending, hasChecked } = useApprovalGuard({
+    redirectTo: "/pdfs", // Stay on page but show restriction message
+    showToast: false,
+  });
   const { toast } = useToast();
 
-  // Log admin status to help with debugging
+  // Get and track authentication state
   useEffect(() => {
-    console.log("Admin status in PDFs page:", isAdmin);
-  }, [isAdmin]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
 
-  const { data: pdfs, isLoading, refetch } = useQuery({
-    queryKey: ["pdfs"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("pdfs")
-        .select("*")
-        .order("upload_date", { ascending: false });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
 
-      if (error) {
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch PDFs
+  useEffect(() => {
+    const fetchPdfs = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from("pdfs")
+          .select("*")
+          .order("upload_date", { ascending: false });
+
+        if (error) throw error;
+        setPdfs(data || []);
+      } catch (error) {
+        console.error("Error fetching PDFs:", error);
         toast({
           title: "Error",
-          description: "Failed to fetch PDFs",
+          description: "Failed to fetch PDFs. Please try again.",
           variant: "destructive",
         });
-        throw error;
+      } finally {
+        setIsLoading(false);
       }
-      return data as PDF[];
-    },
-  });
+    };
 
-  const handlePreview = async (pdfPath: string) => {
-    setSelectedPDF(`https://rtwspqivpnjszjvjspbw.supabase.co/storage/v1/object/public/pdf-storage/${pdfPath}`);
-  };
+    fetchPdfs();
+  }, [refresh, toast]);
 
-  const handleDelete = async (id: string, filePath: string) => {
-    try {
-      // First delete from storage
-      const { error: storageError } = await supabase.storage
-        .from("pdf-storage")
-        .remove([filePath]);
-
-      if (storageError) {
-        throw storageError;
-      }
-
-      // Then delete from database
-      const { error: dbError } = await supabase
-        .from("pdfs")
-        .delete()
-        .eq("id", id);
-
-      if (dbError) {
-        throw dbError;
-      }
-
+  const handlePdfSelect = (pdf) => {
+    // Restrict PDF access to approved users
+    if (!session) {
       toast({
-        title: "Success",
-        description: "PDF deleted successfully",
-      });
-
-      refetch();
-    } catch (error) {
-      console.error("Delete error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete PDF",
+        title: "Authentication Required",
+        description: "Please log in to view PDFs",
         variant: "destructive",
       });
+      return;
     }
+    
+    if (!isApproved && hasChecked) {
+      toast({
+        title: "Access Restricted",
+        description: "Your account is pending approval or has been rejected.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setSelectedPdf(pdf);
+    setShowModal(true);
   };
 
-  if (isLoading || isAdminLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const handleUploadComplete = () => {
+    setRefresh((prev) => prev + 1);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {isAdmin ? (
-        <PDFUploadForm onSuccess={refetch} />
-      ) : (
-        <div className="mb-8 p-4 border rounded-md bg-yellow-50 text-yellow-800">
-          <p>You need admin privileges to upload PDFs.</p>
-        </div>
+      <h1 className="text-3xl font-bold mb-6">PDF Resources</h1>
+
+      {session && !isApproved && isPending && hasChecked && (
+        <Alert variant="warning" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Account Pending Approval</AlertTitle>
+          <AlertDescription>
+            Your account is pending administrator approval. You can browse the PDFs, but you cannot view them until your account is approved.
+          </AlertDescription>
+        </Alert>
       )}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">PDF Library</h1>
-        <p className="text-gray-600 mt-2">Browse and download our collection of PDFs</p>
-      </div>
-      <PDFGrid 
-        pdfs={pdfs || []} 
-        onPreview={handlePreview} 
-        onDelete={isAdmin ? handleDelete : undefined}
-        isAdmin={isAdmin}
+      
+      {session && !isApproved && !isPending && hasChecked && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Account Rejected</AlertTitle>
+          <AlertDescription>
+            Your account has been rejected by the administrators. You cannot access PDF resources.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {session && <PDFUploadForm onUploadComplete={handleUploadComplete} />}
+
+      <PDFGrid
+        pdfs={pdfs}
+        isLoading={isLoading}
+        onSelect={handlePdfSelect}
+        isApproved={isApproved}
       />
-      <PDFPreviewModal
-        pdfUrl={selectedPDF}
-        onClose={() => setSelectedPDF(null)}
-      />
+
+      {showModal && (
+        <PDFPreviewModal
+          pdf={selectedPdf}
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 };
