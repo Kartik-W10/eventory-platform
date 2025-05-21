@@ -14,9 +14,10 @@ interface User {
   id: string;
   email: string;
   created_at: string;
-  display_name?: string;
+  user_metadata: {
+    name?: string;
+  };
   status: 'pending' | 'approved' | 'rejected';
-  user_id?: string; // Add this for compatibility with database
 }
 
 const UserApprovals = () => {
@@ -39,27 +40,33 @@ const UserApprovals = () => {
       try {
         setIsLoadingUsers(true);
         
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .order('created_at', { ascending: false });
+        // In a real implementation, you would fetch users from your database
+        // For this example, we'll use mock data
+        const mockUsers: User[] = [
+          {
+            id: "1",
+            email: "user1@example.com",
+            created_at: new Date().toISOString(),
+            user_metadata: { name: "John Doe" },
+            status: "pending"
+          },
+          {
+            id: "2",
+            email: "user2@example.com",
+            created_at: new Date(Date.now() - 86400000).toISOString(),
+            user_metadata: { name: "Jane Smith" },
+            status: "pending"
+          },
+          {
+            id: "3",
+            email: "user3@example.com",
+            created_at: new Date(Date.now() - 172800000).toISOString(),
+            user_metadata: { name: "Bob Johnson" },
+            status: "approved"
+          }
+        ];
         
-        if (error) {
-          throw error;
-        }
-        
-        // Transform the data to match the User interface
-        // Ensure status is cast to the correct type
-        const transformedData = data?.map(user => ({
-          id: user.user_id,
-          user_id: user.user_id,
-          email: user.email,
-          display_name: user.display_name,
-          created_at: user.created_at,
-          status: user.status as 'pending' | 'approved' | 'rejected' // Type assertion to ensure compatibility
-        })) || [];
-        
-        setUsers(transformedData);
+        setUsers(mockUsers);
       } catch (error) {
         console.error("Error fetching users:", error);
         toast({
@@ -79,15 +86,7 @@ const UserApprovals = () => {
 
   const handleApproveUser = async (userId: string) => {
     try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ status: 'approved', updated_at: new Date().toISOString() })
-        .eq('user_id', userId);
-      
-      if (error) {
-        throw error;
-      }
-      
+      // In a real implementation, you would update the user's status in your database
       setUsers(users.map(user => 
         user.id === userId ? { ...user, status: 'approved' } : user
       ));
@@ -108,15 +107,7 @@ const UserApprovals = () => {
 
   const handleRejectUser = async (userId: string) => {
     try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ status: 'rejected', updated_at: new Date().toISOString() })
-        .eq('user_id', userId);
-      
-      if (error) {
-        throw error;
-      }
-      
+      // In a real implementation, you would update the user's status in your database
       setUsers(users.map(user => 
         user.id === userId ? { ...user, status: 'rejected' } : user
       ));
@@ -176,7 +167,7 @@ const UserApprovals = () => {
               users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">
-                    {user.display_name || "Not provided"}
+                    {user.user_metadata?.name || "Not provided"}
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
@@ -197,27 +188,27 @@ const UserApprovals = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
-                      {user.status !== "approved" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleApproveUser(user.id)}
-                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                        >
-                          <UserCheck className="h-4 w-4 mr-1" />
-                          Approve
-                        </Button>
-                      )}
-                      {user.status !== "rejected" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRejectUser(user.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <UserX className="h-4 w-4 mr-1" />
-                          Reject
-                        </Button>
+                      {user.status === "pending" && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleApproveUser(user.id)}
+                            className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                          >
+                            <UserCheck className="h-4 w-4 mr-1" />
+                            Approve
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRejectUser(user.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <UserX className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
+                        </>
                       )}
                     </div>
                   </TableCell>

@@ -5,12 +5,12 @@ import { LayoutDashboard, FileText, UserCheck, Settings } from "lucide-react";
 
 const AdminNav = () => {
   const location = useLocation();
-  const [activeTab] = useState(location.pathname);
+  const [activeTab, setActiveTab] = useState(location.pathname);
   
   const navItems = [
     { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
-    { name: "Content Manager", path: "/admin/pages", icon: FileText },
-    { name: "User Approvals", path: "/admin/users", icon: UserCheck },
+    { name: "Pages", path: "/admin/pages", icon: FileText },
+    { name: "Users", path: "/admin/users", icon: UserCheck },
     { name: "Settings", path: "/admin/settings", icon: Settings },
   ];
 
@@ -28,6 +28,7 @@ const AdminNav = () => {
                   ? "bg-primary text-white"
                   : "text-gray-600 hover:bg-gray-200"
               }`}
+              onClick={() => setActiveTab(item.path)}
             >
               <item.icon className="h-5 w-5" />
               <span>{item.name}</span>

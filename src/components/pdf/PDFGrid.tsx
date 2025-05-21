@@ -20,29 +20,9 @@ interface PDFGridProps {
   onPreview: (pdfPath: string) => void;
   onDelete?: (id: string, filePath: string) => void;
   isAdmin?: boolean;
-  isLoading?: boolean; // Add this prop
-  isApproved?: boolean; // Add this prop
-  onSelect?: (pdf: PDF) => void; // Add this prop for backward compatibility
 }
 
-export const PDFGrid = ({ pdfs, onPreview, onDelete, isAdmin, isLoading, onSelect }: PDFGridProps) => {
-  // If onSelect is provided, use it instead of onPreview for backward compatibility
-  const handlePreviewClick = (pdf: PDF) => {
-    if (onSelect) {
-      onSelect(pdf);
-    } else {
-      onPreview(pdf.file_path);
-    }
-  };
-  
-  if (isLoading) {
-    return <div className="flex justify-center items-center py-12">Loading PDFs...</div>;
-  }
-  
-  if (!pdfs || pdfs.length === 0) {
-    return <div className="text-center py-12 text-muted-foreground">No PDFs available</div>;
-  }
-
+export const PDFGrid = ({ pdfs, onPreview, onDelete, isAdmin }: PDFGridProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {pdfs?.map((pdf) => (
@@ -86,7 +66,7 @@ export const PDFGrid = ({ pdfs, onPreview, onDelete, isAdmin, isLoading, onSelec
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => handlePreviewClick(pdf)}
+                    onClick={() => onPreview(pdf.file_path)}
                     className="hover:bg-primary hover:text-primary-foreground"
                   >
                     Preview
