@@ -49,13 +49,14 @@ const UserApprovals = () => {
         }
         
         // Transform the data to match the User interface
+        // Ensure status is cast to the correct type
         const transformedData = data?.map(user => ({
           id: user.user_id,
           user_id: user.user_id,
           email: user.email,
           display_name: user.display_name,
           created_at: user.created_at,
-          status: user.status
+          status: user.status as 'pending' | 'approved' | 'rejected' // Type assertion to ensure compatibility
         })) || [];
         
         setUsers(transformedData);
