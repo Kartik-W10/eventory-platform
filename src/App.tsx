@@ -7,6 +7,7 @@ import { SidebarProvider } from "@/components/ui/sidebar/sidebar-context";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SidebarMenu from "@/components/SidebarMenu";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
@@ -67,24 +68,25 @@ function App() {
               <SidebarMenu />
               <main className="flex-1 overflow-x-hidden">
                 <Routes>
+                  {/* Public routes */}
                   <Route path="/" element={<Index />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/events" element={<Events />} />
-                  <Route path="/pdfs" element={<PDFs />} />
                   <Route path="/auth" element={<Auth />} />
-                  <Route path="/meeting-booking" element={<MeetingBooking />} />
-                  <Route path="/downloads/code" element={<CodePage />} />
-                  <Route path="/downloads/resources" element={<ResourcesPage />} />
                   
-                  {/* New routes for publications and projects */}
-                  <Route path="/publications/newspaper" element={<NewspaperPage />} />
-                  <Route path="/publications/research" element={<ResearchPage />} />
-                  <Route path="/projects/industrial" element={<IndustrialPage />} />
-                  <Route path="/projects/academic" element={<AcademicPage />} />
-                  
-                  {/* Article detail route */}
-                  <Route path="/:category/:slug" element={<ArticleDetail />} />
+                  {/* Protected routes that require authentication and approved status */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/events" element={<Events />} />
+                    <Route path="/pdfs" element={<PDFs />} />
+                    <Route path="/meeting-booking" element={<MeetingBooking />} />
+                    <Route path="/downloads/code" element={<CodePage />} />
+                    <Route path="/downloads/resources" element={<ResourcesPage />} />
+                    <Route path="/publications/newspaper" element={<NewspaperPage />} />
+                    <Route path="/publications/research" element={<ResearchPage />} />
+                    <Route path="/projects/industrial" element={<IndustrialPage />} />
+                    <Route path="/projects/academic" element={<AcademicPage />} />
+                    <Route path="/:category/:slug" element={<ArticleDetail />} />
+                  </Route>
                   
                   {/* Admin routes */}
                   <Route path="/admin" element={<AdminDashboard />} />

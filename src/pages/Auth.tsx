@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,17 +15,55 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const checkUserStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("status")
+        .eq("user_id", userId)
+        .maybeSingle();
+      
+      if (error) throw error;
+      
+      if (data && data.status === "rejected") {
+        // Log the user out if their account is rejected/disabled
+        await supabase.auth.signOut();
+        toast({
+          variant: "destructive",
+          title: "Account disabled",
+          description: "Your account has been disabled. Please contact support for assistance.",
+        });
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error checking user status:", error);
+      return true; // Default to allowing access if status check fails
+    }
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+        
         if (error) throw error;
+        
+        // Check if the user's account is disabled
+        if (data.user) {
+          const isActive = await checkUserStatus(data.user.id);
+          if (!isActive) {
+            return; // Don't navigate if account is disabled
+          }
+        }
+        
         navigate("/");
       } else {
         const { error } = await supabase.auth.signUp({

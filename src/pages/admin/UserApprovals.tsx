@@ -109,7 +109,6 @@ const UserApprovals = () => {
       
       if (error) throw error;
       
-      // We don't need to update the local state as the real-time subscription will handle it
       toast({
         title: "User approved",
         description: "The user has been successfully approved"
@@ -160,8 +159,10 @@ const UserApprovals = () => {
       if (error) throw error;
       
       toast({
-        title: `User ${newStatus}`,
-        description: `The user has been ${newStatus}`
+        title: newStatus === "approved" ? "User enabled" : "User disabled",
+        description: newStatus === "approved" ? 
+          "The user account has been enabled" : 
+          "The user account has been disabled"
       });
     } catch (error) {
       console.error("Error toggling user status:", error);
@@ -200,7 +201,8 @@ const UserApprovals = () => {
         </CardHeader>
         <CardContent>
           <p>
-            Approve or reject new user registrations. You can also toggle the status of existing users at any time.
+            Approve or reject new user registrations. Toggle the switch to enable or disable existing users at any time.
+            Disabled users will only be able to access the home page.
           </p>
         </CardContent>
       </Card>
