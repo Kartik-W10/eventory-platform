@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserCheck, UserX } from "lucide-react";
+import { UserCheck, UserX, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import AdminNav from "@/components/admin/AdminNav";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { supabase } from "@/integrations/supabase/client";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface User {
   id: string;
@@ -40,33 +42,27 @@ const UserApprovals = () => {
       try {
         setIsLoadingUsers(true);
         
-        // In a real implementation, you would fetch users from your database
-        // For this example, we'll use mock data
-        const mockUsers: User[] = [
-          {
-            id: "1",
-            email: "user1@example.com",
-            created_at: new Date().toISOString(),
-            user_metadata: { name: "John Doe" },
-            status: "pending"
-          },
-          {
-            id: "2",
-            email: "user2@example.com",
-            created_at: new Date(Date.now() - 86400000).toISOString(),
-            user_metadata: { name: "Jane Smith" },
-            status: "pending"
-          },
-          {
-            id: "3",
-            email: "user3@example.com",
-            created_at: new Date(Date.now() - 172800000).toISOString(),
-            user_metadata: { name: "Bob Johnson" },
-            status: "approved"
-          }
-        ];
+        // Get all user profiles from the user_profiles table
+        const { data: profiles, error: profilesError } = await supabase
+          .from("user_profiles")
+          .select("*");
         
-        setUsers(mockUsers);
+        if (profilesError) {
+          throw profilesError;
+        }
+        
+        // We need to map our profiles to the User interface
+        const mappedUsers = profiles.map(profile => ({
+          id: profile.user_id,
+          email: profile.email,
+          created_at: profile.created_at,
+          user_metadata: {
+            name: profile.display_name
+          },
+          status: profile.status as 'pending' | 'approved' | 'rejected'
+        }));
+        
+        setUsers(mappedUsers);
       } catch (error) {
         console.error("Error fetching users:", error);
         toast({
@@ -82,15 +78,38 @@ const UserApprovals = () => {
     if (isAdmin) {
       fetchUsers();
     }
+
+    // Set up real-time subscription to user_profiles table
+    const channel = supabase
+      .channel('public:user_profiles')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'user_profiles' 
+        }, 
+        (payload) => {
+          // When a profile is updated, refresh our data
+          fetchUsers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [isAdmin, toast]);
 
   const handleApproveUser = async (userId: string) => {
     try {
-      // In a real implementation, you would update the user's status in your database
-      setUsers(users.map(user => 
-        user.id === userId ? { ...user, status: 'approved' } : user
-      ));
+      const { error } = await supabase
+        .from("user_profiles")
+        .update({ status: "approved" })
+        .eq("user_id", userId);
       
+      if (error) throw error;
+      
+      // We don't need to update the local state as the real-time subscription will handle it
       toast({
         title: "User approved",
         description: "The user has been successfully approved"
@@ -107,10 +126,12 @@ const UserApprovals = () => {
 
   const handleRejectUser = async (userId: string) => {
     try {
-      // In a real implementation, you would update the user's status in your database
-      setUsers(users.map(user => 
-        user.id === userId ? { ...user, status: 'rejected' } : user
-      ));
+      const { error } = await supabase
+        .from("user_profiles")
+        .update({ status: "rejected" })
+        .eq("user_id", userId);
+      
+      if (error) throw error;
       
       toast({
         title: "User rejected",
@@ -123,6 +144,40 @@ const UserApprovals = () => {
         description: "Failed to reject user",
         variant: "destructive"
       });
+    }
+  };
+  
+  const handleToggleUserStatus = async (userId: string, currentStatus: string) => {
+    try {
+      // Toggle between approved and rejected
+      const newStatus = currentStatus === "approved" ? "rejected" : "approved";
+      
+      const { error } = await supabase
+        .from("user_profiles")
+        .update({ status: newStatus })
+        .eq("user_id", userId);
+      
+      if (error) throw error;
+      
+      toast({
+        title: `User ${newStatus}`,
+        description: `The user has been ${newStatus}`
+      });
+    } catch (error) {
+      console.error("Error toggling user status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update user status",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case "approved": return "success";
+      case "rejected": return "destructive";
+      default: return "outline";
     }
   };
 
@@ -138,6 +193,17 @@ const UserApprovals = () => {
     <div className="container mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold mb-6">User Approvals</h1>
       <AdminNav />
+      
+      <Card className="mb-6">
+        <CardHeader className="pb-2">
+          <CardTitle>User Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>
+            Approve or reject new user registrations. You can also toggle the status of existing users at any time.
+          </p>
+        </CardContent>
+      </Card>
       
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <Table>
@@ -176,11 +242,7 @@ const UserApprovals = () => {
                   <TableCell>
                     <Badge
                       variant={
-                        user.status === "approved"
-                          ? "success"
-                          : user.status === "rejected"
-                          ? "destructive"
-                          : "outline"
+                        getStatusBadgeVariant(user.status) as any
                       }
                     >
                       {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
@@ -188,7 +250,7 @@ const UserApprovals = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
-                      {user.status === "pending" && (
+                      {user.status === "pending" ? (
                         <>
                           <Button
                             variant="outline"
@@ -209,6 +271,17 @@ const UserApprovals = () => {
                             Reject
                           </Button>
                         </>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <Switch 
+                            id={`user-toggle-${user.id}`}
+                            checked={user.status === "approved"}
+                            onCheckedChange={() => handleToggleUserStatus(user.id, user.status)}
+                          />
+                          <span className="text-sm">
+                            {user.status === "approved" ? "Active" : "Disabled"}
+                          </span>
+                        </div>
                       )}
                     </div>
                   </TableCell>

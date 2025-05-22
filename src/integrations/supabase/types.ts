@@ -227,6 +227,36 @@ export type Database = {
         }
         Relationships: []
       }
+      page_contents: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          last_updated_at: string | null
+          last_updated_by: string | null
+          page_key: string
+          title: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          last_updated_at?: string | null
+          last_updated_by?: string | null
+          page_key: string
+          title: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          last_updated_at?: string | null
+          last_updated_by?: string | null
+          page_key?: string
+          title?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -349,6 +379,33 @@ export type Database = {
           start_time?: string
           status?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          created_at: string | null
+          display_name: string | null
+          email: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_name?: string | null
+          email: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string | null
+          email?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

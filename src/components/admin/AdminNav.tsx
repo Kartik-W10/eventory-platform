@@ -10,7 +10,7 @@ const AdminNav = () => {
   const navItems = [
     { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
     { name: "Pages", path: "/admin/pages", icon: FileText },
-    { name: "Users", path: "/admin/users", icon: UserCheck },
+    { name: "User Management", path: "/admin/users", icon: UserCheck },
     { name: "Settings", path: "/admin/settings", icon: Settings },
   ];
 
