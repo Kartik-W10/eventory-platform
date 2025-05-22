@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserCheck, UserX, UserCog } from "lucide-react";
@@ -275,13 +274,24 @@ const UserApprovals = () => {
                         </>
                       ) : (
                         <div className="flex items-center space-x-2">
-                          <Switch 
-                            id={`user-toggle-${user.id}`}
-                            checked={user.status === "approved"}
-                            onCheckedChange={() => handleToggleUserStatus(user.id, user.status)}
-                          />
-                          <span className="text-sm">
-                            {user.status === "approved" ? "Active" : "Disabled"}
+                          <div className="relative">
+                            <Switch 
+                              id={`user-toggle-${user.id}`}
+                              checked={user.status === "approved"}
+                              onCheckedChange={() => handleToggleUserStatus(user.id, user.status)}
+                              className={`${
+                                user.status === "approved" 
+                                  ? "bg-green-500 hover:bg-green-600" 
+                                  : "bg-red-500 hover:bg-red-600"
+                              }`}
+                            />
+                          </div>
+                          <span className={`text-sm font-medium ${
+                            user.status === "approved" 
+                              ? "text-green-600" 
+                              : "text-red-600"
+                          }`}>
+                            {user.status === "approved" ? "Enabled" : "Disabled"}
                           </span>
                         </div>
                       )}
