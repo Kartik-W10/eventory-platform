@@ -1,11 +1,10 @@
-
 import { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-// Define allowed routes for rejected users
-const ALLOWED_ROUTES_FOR_REJECTED = ["/about", "/events"];
+// Define public routes that don't require authentication
+const PUBLIC_ROUTES = ["/about", "/events"];
 
 const ProtectedRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -17,6 +16,19 @@ const ProtectedRoute = () => {
   useEffect(() => {
     const checkAuthAndStatus = async () => {
       try {
+        // Check if the current route is a public route
+        const isPublicRoute = PUBLIC_ROUTES.some(route => 
+          location.pathname === route || location.pathname.startsWith(`${route}/`)
+        );
+        
+        // If it's a public route, we can skip authentication checks
+        if (isPublicRoute) {
+          setIsAuthenticated(true); // Allow access
+          setIsApproved(true); // Allow access
+          setIsLoading(false);
+          return;
+        }
+        
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
@@ -60,7 +72,7 @@ const ProtectedRoute = () => {
     };
     
     checkAuthAndStatus();
-  }, [toast]);
+  }, [toast, location.pathname]);
   
   if (isLoading) {
     return (
@@ -70,19 +82,31 @@ const ProtectedRoute = () => {
     );
   }
   
-  // Handle authentication status
+  // Check if current path is in public routes
+  const isPublicRoute = PUBLIC_ROUTES.some(route => 
+    location.pathname === route || location.pathname.startsWith(`${route}/`)
+  );
+  
+  // Allow access to public routes for everyone
+  if (isPublicRoute) {
+    return <Outlet />;
+  }
+  
+  // For non-public routes, require authentication
   if (!isAuthenticated) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
   
-  // Check if current path is in allowed routes for rejected users
-  const isAllowedForRejected = ALLOWED_ROUTES_FOR_REJECTED.some(route => 
-    location.pathname === route || location.pathname.startsWith(`${route}/`)
-  );
-  
   // Handle approval status - if rejected but on allowed path, let them through
-  if (!isApproved && !isAllowedForRejected) {
-    return <Navigate to="/" state={{ from: location }} replace />;
+  if (!isApproved) {
+    // We keep the allowed routes for rejected users as they are
+    const isAllowedForRejected = PUBLIC_ROUTES.some(route => 
+      location.pathname === route || location.pathname.startsWith(`${route}/`)
+    );
+    
+    if (!isAllowedForRejected) {
+      return <Navigate to="/" state={{ from: location }} replace />;
+    }
   }
   
   // User is authenticated and either approved or on an allowed path
