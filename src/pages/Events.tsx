@@ -34,6 +34,9 @@ const Events = () => {
     console.log("Admin status in Events page:", isAdmin);
   }, [isAdmin]);
   
+  // Check if user is disabled
+  const [isUserDisabled, setIsUserDisabled] = useState(false);
+  
   const [filters, setFilters] = useState<EventFilters>({
     category: "all",
     searchQuery: "",
@@ -44,6 +47,23 @@ const Events = () => {
   const [showPaymentVerification, setShowPaymentVerification] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [currentRegistration, setCurrentRegistration] = useState<EventRegistration | null>(null);
+
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("user_profiles")
+          .select("status")
+          .eq("user_id", user.id)
+          .maybeSingle();
+          
+        setIsUserDisabled(data?.status === "rejected");
+      }
+    };
+    
+    checkUserStatus();
+  }, []);
 
   const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ["events", filters],
@@ -100,6 +120,22 @@ const Events = () => {
         toast({
           title: "Please log in",
           description: "You need to be logged in to register for events.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Check if user is disabled
+      const { data } = await supabase
+        .from("user_profiles")
+        .select("status")
+        .eq("user_id", user.id)
+        .maybeSingle();
+        
+      if (data?.status === "rejected") {
+        toast({
+          title: "Account disabled",
+          description: "Your account is disabled. You cannot register for events.",
           variant: "destructive",
         });
         return;
@@ -347,6 +383,7 @@ const Events = () => {
             }}
             onDelete={handleDeleteEvent}
             getRegistrationStatus={getRegistrationStatus}
+            isUserDisabled={isUserDisabled}
           />
         )}
 

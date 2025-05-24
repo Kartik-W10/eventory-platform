@@ -75,8 +75,8 @@ function App() {
                   {/* Protected routes that require authentication and approved status */}
                   <Route element={<ProtectedRoute />}>
                     <Route path="/about" element={<About />} />
-                    <Route path="/contact" element={<Contact />} />
                     <Route path="/events" element={<Events />} />
+                    <Route path="/contact" element={<Contact />} />
                     <Route path="/pdfs" element={<PDFs />} />
                     <Route path="/meeting-booking" element={<MeetingBooking />} />
                     <Route path="/downloads/code" element={<CodePage />} />

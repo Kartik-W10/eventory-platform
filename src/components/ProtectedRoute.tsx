@@ -4,6 +4,9 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+// Define allowed routes for rejected users
+const ALLOWED_ROUTES_FOR_REJECTED = ["/about", "/events"];
+
 const ProtectedRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isApproved, setIsApproved] = useState<boolean | null>(null);
@@ -43,7 +46,7 @@ const ProtectedRoute = () => {
             toast({
               variant: "destructive",
               title: "Account disabled",
-              description: "Your account has been disabled. You can only access the home page.",
+              description: "Your account has been disabled. You can only access limited pages.",
             });
           }
         }
@@ -72,12 +75,17 @@ const ProtectedRoute = () => {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
   
-  // Handle approval status - redirect to home if not approved
-  if (!isApproved) {
+  // Check if current path is in allowed routes for rejected users
+  const isAllowedForRejected = ALLOWED_ROUTES_FOR_REJECTED.some(route => 
+    location.pathname === route || location.pathname.startsWith(`${route}/`)
+  );
+  
+  // Handle approval status - if rejected but on allowed path, let them through
+  if (!isApproved && !isAllowedForRejected) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
   
-  // User is authenticated and approved, render the protected content
+  // User is authenticated and either approved or on an allowed path
   return <Outlet />;
 };
 

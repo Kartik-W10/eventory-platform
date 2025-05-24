@@ -44,7 +44,14 @@ export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) 
     queryKey: ["eventRegistration", event.id],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { isAuthenticated: false, isRegistered: false, isAdmin: false };
+      if (!user) return { isAuthenticated: false, isRegistered: false, isAdmin: false, userStatus: null };
+
+      // Check user status (approved/rejected)
+      const { data: userData } = await supabase
+        .from("user_profiles")
+        .select("status")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
       // Check if user is admin
       const { data: adminData } = await supabase
@@ -64,7 +71,8 @@ export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) 
       return {
         isAuthenticated: true,
         isRegistered: !!registrationData,
-        isAdmin: !!adminData
+        isAdmin: !!adminData,
+        userStatus: userData?.status || null
       };
     }
   });
@@ -82,6 +90,35 @@ export const EventDetails = ({ event, onRegister, onClose }: EventDetailsProps) 
     return (
       <div className="space-y-4 text-center">
         <p className="text-gray-600">Please log in to view event details and register.</p>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose}>Close</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // If user account is rejected/disabled, show message that they can't register
+  if (registrationStatus.userStatus === "rejected") {
+    return (
+      <div className="space-y-4">
+        <p className="text-gray-600">{event.description}</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <h4 className="font-semibold">Date & Time</h4>
+            <p>{format(new Date(event.date), "MMMM d, yyyy")} at {event.time}</p>
+          </div>
+          <div>
+            <h4 className="font-semibold">Location</h4>
+            <p>{event.location}</p>
+          </div>
+          <div>
+            <h4 className="font-semibold">Price</h4>
+            <p>${event.price.toFixed(2)}</p>
+          </div>
+        </div>
+        <div className="mt-4 p-4 border rounded-md bg-yellow-50 text-yellow-800">
+          <p>Your account is currently disabled. You can view event details but cannot register for events.</p>
+        </div>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>Close</Button>
         </div>

@@ -13,6 +13,7 @@ interface EventListProps {
   onEdit?: (event: Event) => void;
   onDelete?: (eventId: string) => void;
   getRegistrationStatus?: (eventId: string) => string | null;
+  isUserDisabled?: boolean;
 }
 
 export const EventList = ({ 
@@ -21,7 +22,8 @@ export const EventList = ({
   onViewDetails, 
   onEdit, 
   onDelete,
-  getRegistrationStatus 
+  getRegistrationStatus,
+  isUserDisabled = false
 }: EventListProps) => {
   const renderRegistrationStatus = (eventId: string) => {
     if (!getRegistrationStatus) return null;
@@ -68,6 +70,12 @@ export const EventList = ({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {isUserDisabled && (
+        <div className="col-span-full mb-4 p-4 border rounded-md bg-yellow-50 text-yellow-800">
+          <p>Your account is currently disabled. You can view events but cannot register for them.</p>
+        </div>
+      )}
+      
       {events.map((event) => (
         <Card key={event.id} className="overflow-hidden flex flex-col">
           <CardHeader className="pb-3">
@@ -75,7 +83,7 @@ export const EventList = ({
               <Badge variant="outline" className="mr-2">
                 {event.category.replace("_", " ")}
               </Badge>
-              {renderRegistrationStatus(event.id)}
+              {renderRegistrationStatus && renderRegistrationStatus(event.id)}
             </div>
             <CardTitle className="text-xl mt-2">{event.title}</CardTitle>
           </CardHeader>
@@ -111,8 +119,11 @@ export const EventList = ({
                   </Button>
                 </>
               )}
-              <Button onClick={() => onViewDetails(event)}>
-                View Details
+              <Button 
+                onClick={() => onViewDetails(event)} 
+                disabled={isUserDisabled}
+              >
+                {isUserDisabled ? "View Only" : "View Details"}
               </Button>
             </div>
           </CardFooter>
