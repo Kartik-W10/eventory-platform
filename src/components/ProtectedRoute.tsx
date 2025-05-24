@@ -1,10 +1,11 @@
+
 import { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 // Define public routes that don't require authentication
-const PUBLIC_ROUTES = ["/about", "/events"];
+const PUBLIC_ROUTES = ["/about", "/events", "/contact"];
 
 const ProtectedRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
